@@ -17,5 +17,4 @@ The original intention of the website is to record and share skills, experiences
 
 Email: easyformal@gmail.com
 
-I am an EDA R&D engineer dedicated to lowering the learning threshold of chip design and verification.
 

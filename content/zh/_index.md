@@ -13,8 +13,6 @@ description: "Easy Formal 主页"
 
 ### 关于作者
 
-我是一个 EDA 研发工程师，有多年 C++ 研发经验，熟悉硬件形式化验证。
-
 联系邮箱: easyformal@gmail.com
 
 
