@@ -6,18 +6,11 @@ description: "形式验证解决方案：从开始到签核"
 ---
 <!--
 
-https://www.systemverilog.io/verification/blueprint-for-formal-verification/
-
-https://blog.csdn.net/Holden_Liu/article/details/124387333
-
-
-https://singularitykchen.github.io/blog/2021/01/29/Glean-Formal-Signoff/
-
 ### 简介
 
 随着集成电路规模的不断扩大，从设计到流片（Tape-out）的全流程中，验证环节的核心地位日益凸显。在验证领域中，形式验证（Formal） 使用率处于历史最高水平。对于任何验证方法来说，成功的关键在于制定可靠的策略。如果没有彻底的验证解决方案，仍然可能会错过错误！为此，这里提供一个 Formal 的解决方案。这是一个模板或验证计划，你可以在执行 Formal 验证时可以借鉴参考。
 
-在本文中我们使用 Synopsys 的 VC Formal 工具。但这里的所有操作也可以使用任何其他 Formal 工具来完成。
+在本文中我们使用 Synopsys 的 VC Formal 工具，但这里的所有操作也可以使用任何其他 Formal 工具来完成。
 
 该解决方案简单分为 3 个步骤：
 
@@ -34,12 +27,60 @@ https://singularitykchen.github.io/blog/2021/01/29/Glean-Formal-Signoff/
 形式测试台由四个文件组成：
 
 - design.sv – DUT 代码
-- fv_design.sv – testbench 代码，与 DUT 具有相同的端口列表，但端口方向相反。
+- design_sva.sv – testbench 代码
 - vc.tcl– 运行脚本，指导工具执行任务。
 - filelist.f– 列出所有设计和 testbench 文件，以便正确编译。
 
-使用 SystemVerilog 的 bind 语句将 testbench 嵌入到 DUT 中。
+假设你的设计是一个 AHB2APB 桥接器，其模块端口列表如下
 
+```
+module Bridge_Top(Hclk,Hresetn,Hwrite,Hreadyin,Hreadyout,Hwdata,Haddr,Htrans,Prdata,Penable,Pwrite,Pselx,Paddr,Pwdata,Hreadyout,Hresp,Hrdata);
+
+input Hclk,Hresetn,Hwrite,Hreadyin;
+input [31:0] Hwdata,Haddr,Prdata;
+input[1:0] Htrans;
+output Penable,Pwrite,Hreadyout;
+output [1:0] Hresp; 
+output [2:0] Pselx;
+output [31:0] Paddr,Pwdata;
+output [31:0] Hrdata;
+
+...
+
+endmodule
+```
+
+Formal Testbench 本质上是嵌入在 DUT 中的 Verilog 模块。因此，创建一个 bridge_top_sva.sv 如下所示的 TB 文件。此文件执行两项操作：
+
+- 创建一个 Bridge_Top_sva 模块，assertion、assumption 和 cover 属性将在这里编写。此模块具有与 DUT 相同的端口列表，但是 DUT 的 output 端口成为该 TB 模块的 input 端口。  
+- 使用 SystemVerilog 的 bind 语句将 testbench 嵌入到 DUT 中。
+
+```
+module Bridge_Top_sva(
+input logic Hclk,
+input logic Hresetn,
+input logic Hwrite,
+input logic Hreadyin,
+input logic [31:0] Hwdata,
+input logic [31:0] Haddr,
+input logic [1:0] Htrans,
+input logic [31:0] Prdata,
+input logic [2:0] Pselx,
+input logic [31:0] Paddr,
+input logic [31:0] Pwdata,
+input logic Penable,
+input logic Pwrite,
+input logic Hreadyout,
+input logic [1:0] Hresp,
+input logic [31:0] Hrdata);
+
+...
+
+endmodule  
+
+bind Bridge_Top Bridge_Top_sva chk_bridge_top (.Hclk(Hclk), .Hresetn(Hresetn), .Hwrite(Hwrite), .Hreadyin(Hreadyin), .Hwdata(Hwdata), .Haddr(Haddr), .Htrans(Htrans), .Prdata(Prdata), .Pselx(Pselx), .Paddr(Paddr), .Pwdata(Pwdata), .Penable(Penable), .Pwrite(Pwrite), .Hreadyout(Hreadyout), .Hresp(Hresp), .Hrdata(Hrdata));
+
+```
 #### 1.2 使用自动提取属性（AEP）应用进行合理性检查（sanity checks）
 
 AEP（自动提取属性） app 是 VC Formal 工具中的一个功能模块，类似于智能手机上的 app，每个 app 专注于执行特定的任务。AEP app 的作用是：
