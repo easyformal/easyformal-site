@@ -3,7 +3,7 @@ weight: 3
 title: "属性验证（FPV）入门"
 description: ""
 ---
-
+<!--
 ### 1. FPV 介绍
 
 FPV 用于通过证明属性（property）来验证 DUT。这些属性可以由用户创建，也可以由商业 AIP 为接口协议或功能块提供。FPV 工具使用数学求解引擎来彻底证明或反驳属性。如果断言失败，FPV 工具将生成反例来演示失败轨迹。
@@ -55,6 +55,6 @@ sim_run -stable
 sim_save_reset
 ```
 
-
+-->
 
 
