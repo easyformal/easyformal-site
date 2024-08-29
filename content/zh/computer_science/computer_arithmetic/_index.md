@@ -1,7 +1,7 @@
 ---
 weight: 7
-title: "计算机科学：算法与硬件设计"
-description: "Computer science: Algorithms and Hardware Designs."
+title: "计算机算术"
+description: "Computer Arithmetic."
 titleIcon: "fa-solid fa-bug-slash"
 
 ---
