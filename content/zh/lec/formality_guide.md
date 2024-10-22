@@ -459,5 +459,36 @@ Formality 自动创建向量集（反例）来说明比较点的失败
 
 ![pattern_view3](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/lec/image/pattern_view3.png)
 
+#### 10.6 Debug 工具：查看逻辑椎
 
-### 未完待续
+![logic_cone1](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/lec/image/logic_cone1.png)
+
+![logic_cone2](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/lec/image/logic_cone2.png)
+
+![logic_cone3](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/lec/image/logic_cone4.png)
+
+![logic_cone4](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/lec/image/logic_cone4.png)
+
+![logic_cone5](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/lec/image/logic_cone5.png)
+
+#### 10.7 从电路图中查看 RTL 源码
+
+![rtl_source](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/lec/image/rtl_source.png)
+
+### 10.8 Don't Care 
+
+在综合中，X 状态被视为 Don't Care ，Design Compiler可以自由选择 1 或者 0。在 Formality 中，默认情况下 x 的解释和综合相同。
+
+变量 verify_passing_mode 可以控制 X 的比较方式
+- `verification_passing_mode consistency`: Default: Ref:X = Impl:1 ; Ref:X = Impl:0
+- `verification_passing_mode equality`:  Ref:X fails against Impl:1 or Impl:0
+
+- consistency 不对称，如果 RTL-to-gates 通过，gates-to-RTL 可能会失败
+
+- 比较 RTL 到 RTL 时模式“equality”很有用
+
+**Formality 的 Don't Care 符号**
+
+![dont_care](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/lec/image/dont_care.png)
+
+- 当Don't Care (图中 DC) 引脚为 1 时；输出为 X。当Don't Care(图中 DC) 为 0 时；输出为 F。
