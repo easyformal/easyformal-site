@@ -31,6 +31,7 @@ module INCREMENT (A, CLOCK, Z);
         Z <= A + 1;
 endmodule
 ```
+![rtl_code](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/rtl_code.png)
 
 它综合以后的网表如下图所示：
 
@@ -73,6 +74,7 @@ module EvenParity(A, B, C, D, Z);
         Temp2 = C ^ D;
         Z = Temp1 ^ Temp2;
     end
+endmodule
 ```
 
 电路综合后的网表如下所示：
