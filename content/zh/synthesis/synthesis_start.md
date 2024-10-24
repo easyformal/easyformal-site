@@ -255,3 +255,90 @@ DesignWare 分为 DesignWare Basic 与 DesignWare Foundation，DesignWare Basic 
 `set synthetic_library {dw_foundation.sldb}`
 
 `lappend link_library $synthetic_library`
+
+在 verilog 语言中，一个 reg 类型的数据是被解释成无符号数，integer 类型的数据是被解释成二进制补码的有符号数，而且最右边是有符号数的最低位。
+进行算术运算时，它也有各个运算符的优先级，运算按照由左至右进行，如下面的式子——
+
+> SUM <= A*B + C*D + E + F + G
+
+它综合出来会是下面的样子：
+
+![datapath](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/datapath.png)
+
+显然这种结构的延时是很大的，我们可以通过交换运算次序和加入括号形成优化的结构
+
+> SUM <= E + F + G + C*D + A*B
+
+> SUM <= (A*B) + ( (C*D) + ( (E + F) + G))
+
+![datapath2](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/datapath2.png)
+
+### 3. 使用 Design Compiler 进行综合
+
+#### 3.1 预综合过程
+
+##### 3.1.1  启动  Design Compiler
+
+- shell 环境执行 dc_shell
+- shell 环境执行 dc_shell-t（更强大，推荐）
+-design_vision（GUI界面）
+
+##### 3.1.2 库文件设置
+
+1. 工艺库（target_library）
+
+工艺库是综合后电路网表要最终映射到的库，读入的 HDL 代码首先由 synopsys 自带的 GTECH 库转换成 Design Compiler 内部交换的格式，然后经过映射到工艺库和优化生成门级网表。工艺库他是由 Foundary 提供的，一般是.db 的格式。这种格式是 DC 认识的一种内部文件格式，不能由文本方式打开。.db 格式可以由文本格式的.lib 转化过来，
+他们包含的信息是一致的。下面是一个.lib 的工艺库例子——
+
+![target_library](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/target_library.png)
+
+从图中可以看出，工艺库中包含了各个门级单元的行为、引脚、面积以及时序信息（有的工艺库还有功耗方面的参数），DC 在综合时就是根据 target_library 中给出的单元电路的延迟信息来计算路径的延迟。并根据各个单元延时、面积和驱动能力的不同选择合适的单元来优化电路。
+
+在 tcl 模式下，我们可以根据下面的命令指定工艺库——
+
+> set target_library my_tech.db
+
+2. 链接库（link_library）
+
+link_library 设置模块或者单元电路的引用，对于所有 DC 可能用到的库，我们都需要在 link_library 中指定，其中也包括要用到的 IP。
+
+值得注意的一点是：在 link_library 的设置中必须包含 "\*"， 表示 DC 在引用实例化模块或者单元电路时首先搜索已经调进 DC memory 的模块和单元电路，如果在 link library中不包含 "\*"，DC 就不会使用 DC memory 中已有的模块，因此，会出现无法匹配的模块或单元电路的警告信息(unresolved design reference)。
+
+另外，设置 link_library 的时候要注意设置 search_path，请看下面这个例子——
+
+![link_library](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/link_library.png)
+
+图中设置了 link_library，但是 DC 在 link 的时候却报错，找不到 TOP 中引用的 DECODE 模块，这说明 link_library 默认是在运行 DC 的目录下寻找相关引用。要使上例的 DECODE 能被找到，需要设置 search_path，如下图所示—
+
+![link_library2](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/link_library2.png)
+
+3. 符号库（symbol_library）
+
+symbol_library 是 定 义 了 单 元 电 路 显 示 的 Schematic 的 库 。 用 户 如 果 想 启 动
+design_analyzer 或 design_vision 来查看、分析电路时需要设置 symbol_library。符号库的后缀是.sdb，加入没有设置，DC 会用默认的符号库取代。
+
+设置符号库的命令是：`set symbol_library`
+
+4. 综合库（synthetic_library）
+
+在初始化 DC 的时候，不需要设置标准的 DesignWare 库 standard.sldb 用于实现Verilog 描述的运算符，对于扩展的 DesignWare，需要在 synthetic_library 中设置，同时需要在 link_library 中设置相应的库以使得在链接的时候 DC 可以搜索到相应运算符的实现。
+
+##### 3.1.3 读入设计文件
+
+![read_design](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/read_design.png)
+
+Design Compiler 支持多种硬件描述的格式，.db、.v、.vhdl等等，读取不同的文件格式可能需要使用不同的 read 命令。
+
+读取源程序的另外一种方式是配合使用 analyze 命令和 elaborate 命令。
+
+当读取完所要综合的模块之后，需要使用 link 命令将存储区中的模块或实体连接起来，如果在使用 link 命令之后，出现 unresolved design reference 的警告信息，需要重新读取该模块，或者在.synopsys_dc.setup 文件中添加 link_library，告诉 DC 到库中去找这些模块，同时还要注意 search_path 中的路径是否指向该模块或单元电路所在的目录。
+
+##### 3.1.4 设计对象
+
+下图是一个 Verilog 描述的设计实例。
+
+![design_object](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/design_object.png)
+
+Verilog 描述的各个模块可以称之为设计(Design)，里面包含时钟(Clock)，他的输入输出称为端口(Port)，模块中的互连线是线网(Net)，内部引用的元件称为引用(Reference)，引用的实例称为单元(Cell)，引用单元的内部端口是管脚(Pin)。
+
+其中值得注意的是 DC 识别 Clock 不是通过 HDL 的书面表达，而是要通过设计者施加一定的约束来区分的，具体内容后续章节会讨论。
