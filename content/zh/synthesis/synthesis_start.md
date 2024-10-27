@@ -341,4 +341,39 @@ Design Compiler 支持多种硬件描述的格式，.db、.v、.vhdl等等，读
 
 Verilog 描述的各个模块可以称之为设计(Design)，里面包含时钟(Clock)，他的输入输出称为端口(Port)，模块中的互连线是线网(Net)，内部引用的元件称为引用(Reference)，引用的实例称为单元(Cell)，引用单元的内部端口是管脚(Pin)。
 
-其中值得注意的是 DC 识别 Clock 不是通过 HDL 的书面表达，而是要通过设计者施加一定的约束来区分的，具体内容后续章节会讨论。
+如果各个设计对象互相重名怎么办？
+
+![object_rename](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/object_rename.png)
+
+在上图中，一个设计的端口，连线以及内部一个管脚都有一个相同的名字，假如要对名叫”CLK”的线网设置一个为 5 的负载，那应该怎样表示呢？这里，我们需要借助 DCTCL 的一个特殊的数据类型集合（collection）。
+
+> dc_shell-t> set_load 5 [get_nets CLK]
+
+其中的方括号里面表示在所有的线网中搜索名叫 CLK 的线网，将它的负载值设置为 5。get 命令返回对象的集合，如果这个对象没有找到，则返回为空集合。
+
+除了前面的 get_nets 外，还有下面的一些命令可以搜索设计对象，这里列出了 TCL 和 dcshell 两种语法，便于对比——
+
+![find_obj](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/find_obj.png)
+
+
+##### 3.1.5 设计划分
+
+根据功能或者其他的原则将一个系统层次化的分成若干个子模块，这些子模块下面再进一步细分。模块(module)就是一个划分的单位。
+
+下面我们将详细介绍在作设计划分的过程中要注意的几点原则，并根据每个原则举一个实例说明。
+
+> 原则一. 不要让一个组合电路穿越过多的模块
+
+![partition1](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/partition1.png)
+
+上图中的组合逻辑电路存在于寄存器 A 与寄存器 C 之间，它同时穿过了模块 A、模块 B 以及模块 C。如果直接将这样的划分交给 DC 综合，那么综合后的电路将仍旧保持上面的层次关系，即端口定义不会改变。这样的话，DC 在作组合电路
+的优化的时候就会分别针对 A、B、C 三块电路进行，这样势必会影响到 DC 的优化能力，不必要的增加了这条路径的延时和面积。因此，可以考虑将三块分散的组合逻辑划分到一个模块中，如下图所示——
+
+![partition2](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/partition2.png)
+
+这张图说明了组合电路划分到一个模块之后的电路情况，这样 DC 就可以充分的施展它的的优化技巧，综合出比较满意的电路来。为什么说它只是一个较好的划分呢？因为它只是考虑到组合电路的最优划分而没有想到时序电路部分。先看下面一张图——
+
+![partition3](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/partition3.png)
+
+在这张图里，组合逻辑被划到了 C 模块中，它不仅能保证组合的最佳优化还能保证时序的最佳优化，因为里面的寄存器在优化的过程中可以吸收前面的组合逻辑，从而形成其他形式的时序元件，如由原先的 D 触发器变成 JK 触发器、T 触发器、带时钟使能端的触发器等等。这样工艺库中的大量的时序单元都可以得到充分的利用了。
+
