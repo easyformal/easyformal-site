@@ -1,9 +1,9 @@
 ---
 weight: 4
-title: "逻辑综合 RTL Synthesis"
+title: "逻辑综合 Synthesis"
 titleIcon: "fa-solid fa-gears"
 categories: ["综合"]
-description: "逻辑综合 RTL Synthesis"
+description: "逻辑综合 Synthesis"
 expanded: false
 ---
 
