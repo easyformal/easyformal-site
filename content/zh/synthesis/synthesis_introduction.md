@@ -134,7 +134,7 @@ endmodule
 
 上例中的 时，NextToggle 信号没有在所有可能情况下赋值，故在 Toggle=0 或 3 时，NextToggle 保持原有的值，从而产生 Latch。避免产生 latch 的一个方法是给被赋值信号(NextToggle)赋初值。一种方法是加在 case 的最后加入一种 default 的情况（如下）
 
-![case_default1](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/case_default1.png)
+![case_default1](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/case_default.png)
 
 或者在 case 语句之前就对被赋值信号加上一个初值（如下）
 
