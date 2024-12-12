@@ -3,6 +3,8 @@
 weight: 2
 title: "VCFormal FPV 快速上手指南"
 description: "VCFormal FPV 使用教程；Synopsys VC Formal Tutorial Formal Property Verification App"
+draft: true
+
 ---
 
 ### 简介
@@ -50,6 +52,7 @@ uncovered | 未覆盖 |
 为了简化操作，这里将介绍如何在 SV 设计中内联编写断言。性。在这些情况下，该应用程序将提供 **有界证明** 性。在这些情况下，该应用程序将提供 **有界证明** （Bounded Proof）结果，表明在初始状态的**特定深度**内无法找到反例。对于一组断言的证实结果意味着在给定约束下，这些属性不可能为假。
 
 ![fpv1](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/formal_app/fpv/image/fpv1.png)
+
 （Bounded Proof）结果，表明在初始状态的**特定深度**内无法找到反例。对于一组断言的证实结果意味着在给定约束下，这些属性不可能为假。
 
 ![fpv1](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/formal_app/fpv/image/fpv1.png)

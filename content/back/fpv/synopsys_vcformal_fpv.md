@@ -2,7 +2,8 @@
 ---
 weight: 2
 title: "VCFormal FPV 快速上手指南"
-description: "VCFormal FPV 使用教程；Synopsys VC Formal Tutorial Formal Property Verification App"
+description: "VCFormal FPV 使用教程；Synopsys VC Formal Tutorial Formal Property  Verification App"
+draft: true
 ---
 
 ### 简介
