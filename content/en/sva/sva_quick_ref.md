@@ -10,12 +10,12 @@ description: "SystemVerilog Assertion Quick Reference；SVA Quick Reference"
 
 ## Binding
 
-```plaintext
+```systemverilog
 bind target bind_obj [ (params)] bind_inst (ports) ;
 ```
 Attaches a SystemVerilog module or interface to a Verilog module or interface instance, or to a VHDL entity/architecture. Multiple targets supported. Example:
 
-```plaintext
+```systemverilog
 bind fifo fifo_full v1(clk,empty,full); 
 bind top.dut.fifo1 fifo_full v2(clk,empty,full); 
 bind fifo:fifo1,fifo2 fifo_full v3(clk,empty,full);
@@ -23,12 +23,12 @@ bind fifo:fifo1,fifo2 fifo_full v3(clk,empty,full);
 
 ## Immediate Assertions
 
-```plaintext
+```systemverilog
 [ label : ] assert (boolean_expr) [ action_block ] ;
 ```
 Tests an expression when the statement is executed in the procedural code. Example:
 
-```plaintext
+```systemverilog
 enable_set_during_read_op_only : assert (state >= ‘start_read && state <= ‘finish_read); 
 else $warning("Enable set when state => %b", state);
 ```
@@ -37,14 +37,14 @@ else $warning("Enable set when state => %b", state);
 
 ### Sequence
 
-```plaintext
+```systemverilog
 sequence identifier [ argument_list ] ;
 sequence_expr [ seq_op sequence_expr ] ... ; 
 endsequence [ : identifier ] 
 ```
 Declares a sequence expression that can be used in property declarations. Local variables are permitted. Example:
 
-```plaintext
+```systemverilog
 sequence BusReq (bit REQ=0, bit ACK=0); 
 REQ ##[1:3] ACK; 
 endsequence
@@ -52,14 +52,14 @@ endsequence
 
 ### Property
 
-```plaintext
+```systemverilog
 property identifier [ argument_list ] ;
 [ clock_expr ] [ disable_clause ] property_expr ; 
 endproperty [ : identifier ] 
 ```
 Declares a condition or sequence to be verified during simulation. Local variables are permitted. Example:
 
-```plaintext
+```systemverilog
 property P6 (bit AA, BB=‘true, EN=1); 
 @(negedge clk) EN -> (BB ##1 c) |=> (AA ##[1:2] (d||AA)); 
 endproperty
@@ -69,12 +69,12 @@ endproperty
 
 ### Assert Property
 
-```plaintext
+```systemverilog
 [ label : ] assert property (prop_expr) [ action_block ] ;
 ```
 Checks a property during verification. Example:
 
-```plaintext
+```systemverilog
 property P5 (AA); 
 @(negedge clk) (b ##1 c) |=> (AA ##[1:2] (d||AA)); 
 endproperty 
@@ -83,35 +83,35 @@ assert property (P5(a));
 
 ### Assume Property
 
-```plaintext
+```systemverilog
 [label:] assume property (prop_expr) [ action_block ] ;
 ```
 Constrains the inputs considered for the property during verification. In simulation, treated like assert. Example:
 
-```plaintext
+```systemverilog
 A1: assume (@(ena) !rst);
 ```
 
 ### Cover Property
 
-```plaintext
+```systemverilog
 [label:] cover property (prop_expr) [ pass_statement ] ; 
 [label:] cover sequence (seq_expr) [ pass_statement ] ;
 ```
 Monitors the property or sequence for coverage and reports statistics. The statement is executed when the property succeeds. Cover sequence reports all matches. Example:
 
-```plaintext
+```systemverilog
 C1: cover property (@(event) a |-> b ##[2:5] c);
 ```
 
 ## Expect Statement
 
-```plaintext
+```systemverilog
 expect (prop_expr) [ action_block ] ;
 ```
 Blocks the current process until the property succeeds or fails. Example:
 
-```plaintext
+```systemverilog
 expect( @(posedge clk) ##[1:10] top.TX_Monitor.data == value ) 
 success = 1; 
 else success = 0;
@@ -119,12 +119,12 @@ else success = 0;
 
 ## Clock Expressions
 
-```plaintext
+```systemverilog
 @( {{posedge | negedge} clock | expression} )
 ```
 Declares an event or event expression to use for sampling assertion variable values. Multiple clocks, and clocks inferred from an always block containing only assertions, are supported. Examples:
 
-```plaintext
+```systemverilog
 assert property @(posedge clk1) (a ##1 b) |=> @(posedge clk2) (c ##1 d)); 
 endproperty
 
@@ -139,7 +139,7 @@ end
 
 ## Default Clocking Blocks
 
-```plaintext
+```systemverilog
 default clocking [clk_identifier] {identifier | clk_expression} ; 
 clocking_items
 
@@ -147,7 +147,7 @@ end clocking default clocking clk_identifier
 ```
 Specifies the clock or event that controls property evaluation. Example:
 
-```plaintext
+```systemverilog
 default clocking master_clk @(posedge clk); 
 property p4; 
 (a |=> ##2 b); 
@@ -158,13 +158,13 @@ endclocking
 
 ## Disable Clause
 
-```plaintext
+```systemverilog
 disable iff (boolean_expr) 
 default disable iff (boolean_expr)
 ```
 Specifies a reset expression. Checking of the property is terminated asynchronously when the expression is true. Example:
 
-```plaintext
+```systemverilog
 property P4; 
 @(negedge clk) disable iff (rst) (c) |-> (##[max-1:$] d); 
 endproperty
@@ -174,12 +174,12 @@ endproperty
 
 ### Sequence to Property
 
-```plaintext
+```systemverilog
 sequence_expr |-> property_expr 
 ```
 The property expression must be true in the last cycle that the sequence expression is true (overlapping). Example:
 
-```plaintext
+```systemverilog
 property P4; 
 @(negedge clk) disable iff (rst) (c) |-> (##[max-1:$] d); 
 endproperty
@@ -187,12 +187,12 @@ endproperty
 
 ### Sequence Implies Property
 
-```plaintext
+```systemverilog
 sequence_expr |=> property_expr 
 ```
 The property expression must be true in the first cycle after the sequence expression is true. Example:
 
-```plaintext
+```systemverilog
 property property P5 (AA); 
 @(negedge clk) (b ##1 c) |=> (AA ##[1:2] (d||AA)); 
 endproperty
@@ -200,23 +200,23 @@ endproperty
 
 ### And Property
 
-```plaintext
+```systemverilog
 property_expr and property_expr 
 ```
 Returns true if both property expressions are true. Example:
 
-```plaintext
+```systemverilog
 @(c) v |=> (w ##1 @(d) x) and (y ##1 z)
 ```
 
 ### Not Property
 
-```plaintext
+```systemverilog
 not property_expr 
 ```
 Returns the opposite of the value returned by the property_expr. Example:
 
-```plaintext
+```systemverilog
 property abcd; 
 @(posedge clk) a |-> not (b ##1 c ##1 d); 
 endproperty
@@ -224,12 +224,12 @@ endproperty
 
 ### If Property
 
-```plaintext
+```systemverilog
 if (expression) property_expr1 [ else property_expr2] 
 ```
 If expression is true, property_expr1 must hold; property_expr1 does not need to hold when expression is false. If expression is false, property_expr2 must hold, if it exists. Example:
 
-```plaintext
+```systemverilog
 property P2; 
 @ (negedge clk) if (a) b |=> c; else d |=> e; 
 endproperty
@@ -239,23 +239,23 @@ endproperty
 
 ### And Sequence
 
-```plaintext
+```systemverilog
 sequence_expr1 and sequence_expr2 
 ```
 Both sequences must occur, but the end times of the operands can be different. Example:
 
-```plaintext
+```systemverilog
 (a ##2 b) and (c ##2 d ##2 e) ;
 ```
 
 ### First Match
 
-```plaintext
+```systemverilog
 first_match (sequence_expr[, seq_match_item])
 ```
 Evaluation of one or more sequences stops when the first match is found. Example:
 
-```plaintext
+```systemverilog
 sequence s1; 
 first_match(a ##1 b[->1]:N] ## c); 
 endsequence
@@ -263,68 +263,68 @@ endsequence
 
 ### Intersect Sequence
 
-```plaintext
+```systemverilog
 sequence_expr1 intersect sequence_expr2 
 ```
 Both sequences must occur, and the start and end times of the sequence expressions must be the same. Example:
 
-```plaintext
+```systemverilog
 (a ##2 b) intersect (c ##2 d ##2 e)
 ```
 
 ### Or Sequence
 
-```plaintext
+```systemverilog
 sequence_expr1 or sequence_expr2 
 ```
 At least one of the sequences must occur. Example:
 
-```plaintext
+```systemverilog
 (b ##1 c) or (d[*1:2] ##1 e) or f[*2]
 ```
 
 ### Throughout
 
-```plaintext
+```systemverilog
 boolean_expr throughout sequence_expr 
 ```
 A condition must hold true for the duration of a sequence. Example:
 
-```plaintext
+```systemverilog
 (a ##2 b) throughout read_sequence
 ```
 
 ### Within
 
-```plaintext
+```systemverilog
 sequence_expr1 within sequence_expr2 
 ```
 sequence_expr1 must match at some point within the timeframe of sequence_expr2. Example:
 
-```plaintext
+```systemverilog
 (a ##2 b ##3 c) within write_enable
 ```
 
 ## Sequence Methods
 
-```plaintext
+```systemverilog
 sequence_instance.[ ended|matched|triggered]
 ```
 Identifies the endpoint of a sequence. Example:
 
-```plaintext
+```systemverilog
 wait (AB.triggered) || BC.triggered); 
 if (AB.triggered) $display("AB triggered");
 ```
 
 ## Cycle Delays
 
-```plaintext
+```systemverilog
 ##integral_number ##Identifier ##(constant_expression) ##[const_expr : const_expr] ##[const_expr : $]
 ```
 Specifies the number of clock ticks from the current clock tick until the next specified behavior occurs. Example:
 
-```plaintext
+```systemverilog
 property property P5 (AA); 
 @(negedge clk) (b ##1 c) |=> (AA ##[1:2] (d||AA)); 
 endproperty
@@ -332,12 +332,12 @@ endproperty
 
 ## Local Variables in Sequences and Properties
 
-```plaintext
+```systemverilog
 (seq_expression {, seq_match_item}) [ repetition_op ] 
 ```
 The seq_match_item is executed when seq_expression is matched. The match item can be a subroutine call. Example:
 
-```plaintext
+```systemverilog
 sequence data_check; 
 int x; 
 a ##1 (!a, x=data_in) ##1 !b[*0:$] ##1 b && (data_out=x); 
@@ -348,34 +348,34 @@ endsequence
 
 ### Consecutive Repetition
 
-```plaintext
+```systemverilog
 [* const_or_range_expression ]
 ```
 Consecutive repetition. Example:
 
-```plaintext
+```systemverilog
 (a[*2] ##2 b[*2]) |=> (d)
 ```
 
 ### Goto Repetition
 
-```plaintext
+```systemverilog
 [-> const_or_range_expression ]
 ```
 Goto repetition. Example:
 
-```plaintext
+```systemverilog
 a ##1 b[->5] ##1 c
 ```
 
 ### Non-Consecutive Repetition
 
-```plaintext
+```systemverilog
 [= const_or_range_expression ]
 ```
 Non-consecutive repetition. Example:
 
-```plaintext
+```systemverilog
 s1 |=> (b [=5] ##1 c)
 ```
 
@@ -390,25 +390,25 @@ s1 |=> (b [=5] ##1 c)
 
 ### Fatal
 
-```plaintext
+```systemverilog
 $fatal ([ 0 | 1 | 2 , ] message [ , args ] ) ;
 ```
 Fatal message task; messages can be strings or expressions. You can call this task from the action block of an assertion. Example:
 
-```plaintext
+```systemverilog
 $fatal (0);
 ```
 
 ### Error, Warning, Info
 
-```plaintext
+```systemverilog
 $error (message [ , args ] ) ; 
 $warning (message [ , args ] ) ; 
 $info (message [ , args ] ) ;
 ```
 Non-fatal message tasks; messages can be strings or expressions. You can call these tasks from the action block of an assertion. Example:
 
-```plaintext
+```systemverilog
 $error("Unsupported memory task command %b", m_task); 
 $warning("Enable is set during non-read op: state=>%b", state);
 ```
@@ -417,12 +417,12 @@ $warning("Enable is set during non-read op: state=>%b", state);
 
 ### One Hot
 
-```plaintext
+```systemverilog
 $onehot (bit_vector)
 ```
 Returns true if one and only one bit of the expression is high. Example:
 
-```plaintext
+```systemverilog
 property p1(Arg) 
 @(posedge clk) $onehot(Arg); 
 endproperty
@@ -430,12 +430,12 @@ endproperty
 
 ### One Hot 0
 
-```plaintext
+```systemverilog
 $onehot0 (bit_vector)
 ```
 Returns true if no more than one bit of the expression is high. Example:
 
-```plaintext
+```systemverilog
 property p2(Arg) 
 @(posedge clk) $onehot0(Arg); 
 endproperty
@@ -443,12 +443,12 @@ endproperty
 
 ### Is Unknown
 
-```plaintext
+```systemverilog
 $isunknown (bit_vector)
 ```
 Returns true if any bit of the expression is X or Z. Example:
 
-```plaintext
+```systemverilog
 property p3(Arg) 
 @(posedge clk) $isunknown(Arg); 
 endproperty
@@ -456,12 +456,12 @@ endproperty
 
 ### Count Ones
 
-```plaintext
+```systemverilog
 $countones (bit_vector)
 ```
 Returns the number of bits in a vector that have the value 1. Example:
 
-```plaintext
+```systemverilog
 property p4(Arg) 
 @(posedge clk) $countones(Arg) == 4; 
 endproperty
@@ -471,12 +471,12 @@ endproperty
 
 ### Sampled
 
-```plaintext
+```systemverilog
 $sampled(expression)
 ```
 Returns the sampled value of the expression at the current clock cycle. Example:
 
-```plaintext
+```systemverilog
 property propA 
 @(posedge clk) (a ##1 b); 
 endproperty 
@@ -487,57 +487,57 @@ else $warning("a == %s; b == %s", $sampled(test.inst.a), $sampled(test.inst.b));
 
 ### Rose
 
-```plaintext
+```systemverilog
 $rose(expression)
 ```
 Returns true if the sampled value of expression changed to 1 during the current clock cycle. Example:
 
-```plaintext
+```systemverilog
 Example: (a ##1 b) |-> $rose(test.inst.sig4);
 ```
 
 ### Fell
 
-```plaintext
+```systemverilog
 $fell(expression)
 ```
 Returns true if the sampled value of expression changed to 0 during the current clock cycle. Example:
 
-```plaintext
+```systemverilog
 (a ##1 b) |-> $fell(test.inst.c);
 ```
 
 ### Stable
 
-```plaintext
+```systemverilog
 $stable(expression)
 ```
 Returns true if the sampled value of expression remained the same during the current clock cycle. Example:
 
-```plaintext
+```systemverilog
 (a ##1 b) |-> $stable(test.inst.c);
 ```
 
 ### Past
 
-```plaintext
+```systemverilog
 $past(expression [ , n_cycles] )
 ```
 Returns the sampled value of expression at the previous clock cycle or the specified number of clock ticks in the past. Example:
 
-```plaintext
+```systemverilog
 (a == $past(test.inst.c, 5)
 ```
 
 ## Assertion-Control System Tasks
 
-```plaintext
+```systemverilog
 $assertoff [ ( levels [ , list_of_mods_or_assns ] ) ] ; 
 $asserton [ ( levels [ , list_of_mods_or_assns ] ) ] ; 
 $assertkill [ ( levels [ , list_of_mods_or_assns ] ) ] ;
 ```
 Controls assertion checking during simulation. Example:
 
-```plaintext
+```systemverilog
 $assertoff (0, top.mod1, top.mod2.net1);
 ```
