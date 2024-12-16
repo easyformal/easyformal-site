@@ -1,5 +1,5 @@
 ---
-weight: 4
+weight: 5
 title: "逻辑综合 Synthesis"
 titleIcon: "fa-solid fa-gears"
 categories: ["综合"]
