@@ -3,7 +3,7 @@ weight: 1
 title: "SystemVerilog 教程"
 titleIcon: "fa-solid fa-microchip"
 categories: ["数字电路基础"]
-description: "这是详细的 SystemVerilog 课程，将会包含完整的 SystemVerilog 语法内容。"
+description: "这是详细的 SystemVerilog 教程，将会包含完整的 SystemVerilog 语法内容。"
 
 expanded: false
 ---
