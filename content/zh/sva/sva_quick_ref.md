@@ -1,14 +1,14 @@
 
 ---
 weight: 2
-title: "SVA 快速参考手册（更新中）"
+title: "SVA 快速参考手册"
 description: "SystemVerilog Assertion（SVA） 快速参考手册；SVA Quick Reference"
 
 ---
 
 注意：该 SVA 快速参考手册目前支持 IEEE 1800-2005 标准。
 
-## 1. 绑定（Binding）
+## 0. 绑定（Binding）
 
 `bind target bind_obj [ (params)] bind_inst (ports) ;`
 
@@ -20,7 +20,7 @@ bind top.dut.fifo1 fifo_full v2(clk,empty,full);
 bind fifo:fifo1,fifo2 fifo_full v3(clk,empty,full);
 ```
 
-## 立即断言（Immediate Assertions）
+## 1. 立即断言（Immediate Assertions）
 
 `[ label : ] assert (boolean_expr) [ action_block ] ;`
 
@@ -35,11 +35,11 @@ enable_set_during_read_op_only : assert (state >= `start_read && state <= `finis
 
 ### 2.1 序列（Sequence）
 
-`
+```systemverilog
 sequence identifier [ argument_list ] ;
     sequence_expr [ seq_op sequence_expr ] ... ; 
 endsequence [ : identifier ] 
-`
+````
 
 声明一个可以在属性声明中使用的序列表达式。允许使用局部变量。示例：
 
@@ -82,60 +82,56 @@ endproperty
 
 ### 3.1 断言属性（Assert Property）
 
-```systemverilog
-[ label : ] assert property (prop_expr) [ action_block ] ;
-```
+`[ label : ] assert property (prop_expr) [ action_block ] ;`
+
 在验证过程中检查属性。示例：
 
 ```systemverilog
 property P5 (AA); 
-@(negedge clk) (b ##1 c) |=> (AA ##[1:2] (d||AA)); 
+    @(negedge clk) (b ##1 c) |=> (AA ##[1:2] (d||AA)); 
 endproperty 
 assert property (P5(a));
 ```
 
-### 假设属性（Assume Property）
+### 3.2 假设属性（Assume Property）
 
-```systemverilog
-[label:] assume property (prop_expr) [ action_block ] ;
-```
+`[label:] assume property (prop_expr) [ action_block ] ;`
+
 限制验证过程中考虑的输入。在仿真中，处理方式类似于断言。示例：
 
 ```systemverilog
 A1: assume (@(ena) !rst);
 ```
 
-### 覆盖属性（Cover Property）
+### 3.3 覆盖属性（Cover Property）
 
-```systemverilog
-[label:] cover property (prop_expr) [ pass_statement ] ; 
-[label:] cover sequence (seq_expr) [ pass_statement ] ;
-```
+`[label:] cover property (prop_expr) [ pass_statement ] ; `   
+`[label:] cover sequence (seq_expr) [ pass_statement ] ;`
+
+
 监控属性或序列的覆盖率并报告统计信息。当属性成功时，执行语句。覆盖序列报告所有匹配项。示例：
 
 ```systemverilog
 C1: cover property (@(event) a |-> b ##[2:5] c);
 ```
 
-## 期望语句（Expect Statement）
+## 4. 期望语句（Expect Statement）
 
-```systemverilog
-expect (prop_expr) [ action_block ] ;
-```
+`expect (prop_expr) [ action_block ] ;`
+
 阻塞当前进程，直到属性成功或失败。示例：
 
 ```systemverilog
 expect( @(posedge clk) ##[1:10] top.TX_Monitor.data == value ) 
-success = 1; 
+    success = 1; 
 else success = 0;
 ```
 
-## 时钟表达式（Clock Expressions）
+## 5. 时钟表达式（Clock Expressions）
 
-```systemverilog
-@( {{posedge | negedge} clock | expression} )
-```
-声明事件或事件表达式，用于采样断言变量的值。支持多个时钟（17.12），以及从仅包含断言的 always 块推断的时钟。示例：
+`@( {{posedge | negedge} clock | expression} )`
+
+声明事件或事件表达式，用于采样断言变量的值。支持多个时钟，以及从仅包含断言的 always 块推断的时钟。示例：
 
 ```systemverilog
 assert property @(posedge clk1) (a ##1 b) |=> @(posedge clk2) (c ##1 d)); 
@@ -144,32 +140,33 @@ endproperty
 assert property ( @(posedge clk1) (a ##1 b) |=> @(posedge clk2) (c ##1 d) );
 
 always @(posedge clk) begin 
-assert property ( (a ##1 b) |=> (c ##1 d) ); 
-assert property ( (a[*3]) |=> ~c ); 
-cover property ( (a ##1 b ##1 c) |=> (d[*2:4]) ); 
+    assert property ( (a ##1 b) |=> (c ##1 d) ); 
+    assert property ( (a[*3]) |=> ~c ); 
+    cover property ( (a ##1 b ##1 c) |=> (d[*2:4]) ); 
 end
 ```
 
-## 默认时钟块（Default Clocking Blocks）
+## 6. 默认时钟块（Default Clocking Blocks）
 
 ```systemverilog
 default clocking [clk_identifier] {identifier | clk_expression} ; 
-clocking_items
-
-end clocking default clocking clk_identifier
+    clocking_items
+end clocking 
+default clocking clk_identifier
 ```
+
 指定控制属性评估的时钟或事件。示例：
 
 ```systemverilog
 default clocking master_clk @(posedge clk); 
-property p4; 
-(a |=> ##2 b); 
-endproperty 
-assert property (p4); 
+    property p4; 
+        (a |=> ##2 b); 
+    endproperty 
+    assert property (p4); 
 endclocking
 ```
 
-## 禁用子句（Disable Clause）
+## 7. 禁用子句（Disable Clause）
 
 ```systemverilog
 disable iff (boolean_expr) 
@@ -179,67 +176,62 @@ default disable iff (boolean_expr)
 
 ```systemverilog
 property P4; 
-@(negedge clk) disable iff (rst) (c) |-> (##[max-1:$] d); 
+    @(negedge clk) disable iff (rst) (c) |-> (##[max-1:$] d); 
 endproperty
 ```
 
-## 属性表达式（Property Expressions）
+## 8. 属性表达式（Property Expressions）
 
-### 序列到属性（Sequence to Property）
+### 8.1 |->
 
-```systemverilog
-sequence_expr |-> property_expr 
-```
+`sequence_expr |-> property_expr `
+
 属性表达式必须在序列表达式为真的最后一个周期内为真（重叠）。示例：
 
 ```systemverilog
 property P4; 
-@(negedge clk) disable iff (rst) (c) |-> (##[max-1:$] d); 
+    @(negedge clk) disable iff (rst) (c) |-> (##[max-1:$] d); 
 endproperty
 ```
 
-### 序列意味着属性（Sequence Implies Property）
+### 8.2 |=>
 
-```systemverilog
-sequence_expr |=> property_expr 
-```
+`sequence_expr |=> property_expr `
+
 属性表达式必须在序列表达式为真后的第一个周期内为真。示例：
 
 ```systemverilog
 property property P5 (AA); 
-@(negedge clk) (b ##1 c) |=> (AA ##[1:2] (d||AA)); 
+    @(negedge clk) (b ##1 c) |=> (AA ##[1:2] (d||AA)); 
 endproperty
 ```
 
-### 与属性（And Property）
+### 8.3 and
 
-```systemverilog
-property_expr and property_expr 
-```
+`property_expr and property_expr `
+
 如果两个属性表达式都为真，则返回真。示例：
 
 ```systemverilog
 @(c) v |=> (w ##1 @(d) x) and (y ##1 z)
 ```
 
-### 非属性（Not Property）
+### 8.4 not
 
-```systemverilog
-not property_expr 
-```
+`not property_expr `
+
 返回属性表达式的反值。示例：
 
 ```systemverilog
 property abcd; 
-@(posedge clk) a |-> not (b ##1 c ##1 d); 
+    @(posedge clk) a |-> not (b ##1 c ##1 d); 
 endproperty
 ```
 
-### 如果属性（If Property）
+### 8.5 if
 
-```systemverilog
-if (expression) property_expr1 [ else property_expr2] 
-```
+`if (expression) property_expr1 [ else property_expr2] `
+
 如果表达式为真，则 property_expr1 必须成立；如果表达式为假，则 property_expr2 必须成立（如果存在）。示例：
 
 ```systemverilog
@@ -248,24 +240,22 @@ property P2;
 endproperty
 ```
 
-## 序列操作符（Sequence Operators）
+## 9. 序列操作符（Sequence Operators）
 
-### 与序列（And Sequence）
+### 9.1 and
 
-```systemverilog
-sequence_expr1 and sequence_expr2 
-```
+`sequence_expr1 and sequence_expr2 `
+
 两个序列必须都发生，但操作数的结束时间可以不同。示例：
 
 ```systemverilog
 (a ##2 b) and (c ##2 d ##2 e) ;
 ```
 
-### 首次匹配（First Match）
+### 9.2 first_match
 
-```systemverilog
-first_match (sequence_expr[, seq_match_item])
-```
+`first_match (sequence_expr[, seq_match_item])`
+
 一旦找到第一次匹配，就停止对一个或多个序列的评估。示例：
 
 ```systemverilog
@@ -274,82 +264,77 @@ first_match(a ##1 b[->1]:N] ## c);
 endsequence
 ```
 
-### 相交序列（Intersect Sequence）
+### 9.3 intersect
 
-```systemverilog
-sequence_expr1 intersect sequence_expr2 
-```
+`sequence_expr1 intersect sequence_expr2 `
+
 两个序列必须都发生，且序列表达式的起始和结束时间必须相同。示例：
 
 ```systemverilog
 (a ##2 b) intersect (c ##2 d ##2 e)
 ```
 
-### 或序列（Or Sequence）
+### 9.4 or
 
-```systemverilog
-sequence_expr1 or sequence_expr2 
-```
+`sequence_expr1 or sequence_expr2 `
+
 至少有一个序列必须发生。示例：
 
 ```systemverilog
 (b ##1 c) or (d[*1:2] ##1 e) or f[*2]
 ```
 
-### 始终（Throughout）
+### 9.5 throughout
 
-```systemverilog
-boolean_expr throughout sequence_expr 
-```
+`boolean_expr throughout sequence_expr `
+
 条件必须在整个序列的持续时间内成立。示例：
 
 ```systemverilog
 (a ##2 b) throughout read_sequence
 ```
 
-### 在...内（Within）
+### 9.6 within
 
-```systemverilog
-sequence_expr1 within
+`sequence_expr1 within sequence_expr2 `
 
- sequence_expr2 
-```
 sequence_expr1 必须在 sequence_expr2 的时间范围内匹配某一时刻。示例：
 
 ```systemverilog
 (a ##2 b ##3 c) within write_enable
 ```
 
-## 序列方法（Sequence Methods）
+## 10. 序列方法（Sequence Methods）
 
-```systemverilog
-sequence_instance.[ ended|matched|triggered]
-```
+` sequence_instance.[ ended|matched|triggered]`
+
 标识序列的终点。示例：
 
 ```systemverilog
-wait (AB.triggered) || BC.triggered); 
-if (AB.triggered) $display("AB triggered");
+wait ((AB.triggered) || BC.triggered); 
+    if (AB.triggered) $display("AB triggered");
 ```
 
-## 周期延迟（Cycle Delays）
+## 11. 周期延迟（Cycle Delays）
 
-```systemverilog
-##integral_number ##Identifier ##(constant_expression) ##[const_expr : const_expr] ##[const_expr : $]
-```
+`##integral_number `
+`##Identifier `
+`##(constant_expression) `
+`##[const_expr : const_expr]`
+`##[const_expr : $]`
+
 指定从当前时钟周期到下一个指定行为发生的时钟周期数。示例：
 
 ```systemverilog
 property property P5 (AA); 
-@(negedge clk) (b ##1 c) |=> (AA ##[1:2] (d||AA)); 
+    @(negedge clk) (b ##1 c) |=> (AA ##[1:2] (d||AA)); 
 endproperty
 ```
 
-## 序列和属性中的局部变量（Local Variables in Sequences and Properties）
+## 12. 序列和属性中的局部变量（Local Variables in Sequences and Properties）
 
-```systemverilog
-(seq_expression {, seq_match_item}) [ repetition_op ] 
-```
+`(seq_expression {, seq_match_item}) [ repetition_op ] `
+
 当 seq_expression 匹配时，执行 seq_match_item。匹配项可以是子程序调用。示例：
 
 ```systemverilog
@@ -359,68 +344,63 @@ a ##1 (!a, x=data_in) ##1 !b[*0:$] ##1 b && (data_out=x);
 endsequence
 ```
 
-## 重复（Repetition）
+## 13. 重复（Repetition）
 
-### 连续重复（Consecutive Repetition）
+### 13.1 连续重复（Consecutive Repetition）
 
-```systemverilog
-[* const_or_range_expression ]
-```
+`[* const_or_range_expression ] `
+
 连续重复。示例：
 
 ```systemverilog
 (a[*2] ##2 b[*2]) |=> (d)
 ```
 
-### 跳转重复（Goto Repetition）
+### 13.2 跳转重复（Goto Repetition）
 
-```systemverilog
-[-> const_or_range_expression ]
-```
+`[-> const_or_range_expression ]`
+
 跳转重复。示例：
 
 ```systemverilog
 a ##1 b[->5] ##1 c
 ```
 
-### 非连续重复（Non-Consecutive Repetition）
+### 13.3 非连续重复（Non-Consecutive Repetition）
 
-```systemverilog
-[= const_or_range_expression ]
-```
+`[= const_or_range_expression ]`
+
 非连续重复。示例：
 
 ```systemverilog
 s1 |=> (b [=5] ##1 c)
 ```
 
-## 快捷方式（Shortcuts）
+## 14. 快捷方式（Shortcuts）
 
 - R[*] 等同于 R[*0:$]
 - ##[*] 等同于 ##[0:$]
 - R[+] 等同于 R[*1:$]
 - ##[+] 等同于 ##[1:S]
 
-## 断言严重性任务（Assertion Severity Tasks）
+## 15. 断言严重性任务（Assertion Severity Tasks）
 
-### Fatal
+### 15.1 Fatal
 
-```systemverilog
-$fatal ([ 0 | 1 | 2 , ] message [ , args ] ) ;
-```
+`$fatal ([ 0 | 1 | 2 , ] message [ , args ] ) ;`
+
 致命消息任务；消息可以是字符串或表达式。您可以从断言的操作块调用此任务。示例：
 
 ```systemverilog
 $fatal (0);
 ```
 
-### 错误、警告、信息（Error, Warning, Info）
+### 15.2 错误、警告、信息（Error, Warning, Info）
 
-```systemverilog
-$error (message [ , args ] ) ; 
-$warning (message [ , args ] ) ; 
-$info (message [ , args ] ) ;
-```
+`$error (message [ , args ] ) ; `  
+`$warning (message [ , args ] ) ; `  
+`$info (message [ , args ] ) ;`  
+
 非致命消息任务；消息可以是字符串或表达式。您可以从断言的操作块调用这些任务。示例：
 
 ```systemverilog
@@ -428,13 +408,12 @@ $error("Unsupported memory task command %b", m_task);
 $warning("Enable is set during non-read op: state=>%b", state);
 ```
 
-## 系统函数（System Functions）
+## 16. 系统函数（System Functions）
 
-### One Hot
+### 16.1 onehot
 
-```systemverilog
-$onehot (bit_vector)
-```
+`$onehot (bit_vector)`
+
 如果表达式中只有一个位为高电平，则返回真。示例：
 
 ```systemverilog
@@ -443,11 +422,10 @@ property p1(Arg)
 endproperty
 ```
 
-### One Hot 0
+### 16.2 onehot0
 
-```systemverilog
-$onehot0 (bit_vector)
-```
+`$onehot0 (bit_vector)`
+
 如果表达式中至多只有一个位为高电平，则返回真。示例：
 
 ```systemverilog
@@ -456,11 +434,10 @@ property p2(Arg)
 endproperty
 ```
 
-### Is Unknown
+### 16.3 isunknown
 
-```systemverilog
-$isunknown (bit_vector)
-```
+`$isunknown (bit_vector)`
+
 如果表达式中任何一位为 X 或 Z，则返回真。示例：
 
 ```systemverilog
@@ -469,11 +446,10 @@ property p3(Arg)
 endproperty
 ```
 
-### Count Ones
+### 16.4 countones
 
-```systemverilog
-$countones (bit_vector)
-```
+`$countones (bit_vector)`
+
 返回向量中值为 1 的位数。示例：
 
 ```systemverilog
@@ -482,13 +458,12 @@ property p4(Arg)
 endproperty
 ```
 
-## 采样值函数（Sampled-Value Functions）
+## 17. 采样值函数（Sampled-Value Functions）
 
-### 采样（Sampled）
+### 17.1 sampled
 
-```systemverilog
-$sampled(expression)
-```
+`$sampled(expression)`
+
 返回表达式在当前时钟周期的采样值。示例：
 
 ```systemverilog
@@ -500,57 +475,53 @@ $display("%m passed");
 else $warning("a == %s; b == %s", $sampled(test.inst.a), $sampled(test.inst.b));
 ```
 
-### 上升沿（Rose）
+### 17.2 rose
 
-```systemverilog
-$rose(expression)
-```
+`$rose(expression)`
+
 如果表达式的采样值在当前时钟周期改变为 1，则返回真。示例：
 
 ```systemverilog
 Example: (a ##1 b) |-> $rose(test.inst.sig4);
 ```
 
-### 下降沿（Fell）
+### 17.3 fell
 
-```systemverilog
-$fell(expression)
-```
+`$fell(expression)`
+
 如果表达式的采样值在当前时钟周期改变为 0，则返回真。示例：
 
 ```systemverilog
 (a ##1 b) |-> $fell(test.inst.c);
 ```
 
-### 稳定（Stable）
+### 17.4 stable
 
-```systemverilog
-$stable(expression)
-```
+`$stable(expression)`
+
 如果表达式的采样值在当前时钟周期内保持不变，则返回真。示例：
 
 ```systemverilog
 (a ##1 b) |-> $stable(test.inst.c);
 ```
 
-### 上次（Past）
+### 17.5 past
 
-```systemverilog
-$past(expression [ , n_cycles] )
-```
+`$past(expression [ , n_cycles] )`
+
 返回表达式在上一个时钟周期或指定时钟周期数之前的采样值。示例：
 
 ```systemverilog
 (a == $past(test.inst.c, 5)
 ```
 
-## 断言控制系统任务（Assertion-Control System Tasks）
+## 18. 断言控制系统任务（Assertion-Control System Tasks）
 
-```systemverilog
-$assertoff [ ( levels [ , list_of_mods_or_assns ] ) ] ; 
-$asserton [ ( levels [ , list_of_mods_or_assns ] ) ] ; 
-$assertkill [ ( levels [ , list_of_mods_or_assns ] ) ] ;
-```
+`$assertoff [ ( levels [ , list_of_mods_or_assns ] ) ] ; `
+`$asserton [ ( levels [ , list_of_mods_or_assns ] ) ] ; `
+`$assertkill [ ( levels [ , list_of_mods_or_assns ] ) ] ;`
+
+
 控制仿真过程中的断言检查。示例：
 
 ```systemverilog
