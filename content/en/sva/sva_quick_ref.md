@@ -1,12 +1,12 @@
 
 ---
 weight: 2
-title: "SystemVerilog Assertion Quick Reference"
+title: "SVA Quick Reference"
 description: "SystemVerilog Assertion Quick Reference；SVA Quick Reference"
 
 ---
 
-**Note:** Numbers in parentheses indicate the section in the IEEE 1800-2005 Standard for SystemVerilog for the given construct.
+**NOTE**: This SVA Quick Reference Manual currently supports the IEEE 1800-2005 standard.
 
 ## Binding
 
@@ -29,7 +29,7 @@ bind fifo:fifo1,fifo2 fifo_full v3(clk,empty,full);
 Tests an expression when the statement is executed in the procedural code. Example:
 
 ```systemverilog
-enable_set_during_read_op_only : assert (state >= ‘start_read && state <= ‘finish_read); 
+enable_set_during_read_op_only : assert (state >= `start_read && state <= `finish_read); 
 else $warning("Enable set when state => %b", state);
 ```
 
@@ -60,7 +60,7 @@ endproperty [ : identifier ]
 Declares a condition or sequence to be verified during simulation. Local variables are permitted. Example:
 
 ```systemverilog
-property P6 (bit AA, BB=‘true, EN=1); 
+property P6 (bit AA, BB=`true, EN=1); 
 @(negedge clk) EN -> (BB ##1 c) |=> (AA ##[1:2] (d||AA)); 
 endproperty
 ```
@@ -172,7 +172,7 @@ endproperty
 
 ## Property Expressions
 
-### Sequence to Property
+### |-> 
 
 ```systemverilog
 sequence_expr |-> property_expr 
@@ -185,7 +185,7 @@ property P4;
 endproperty
 ```
 
-### Sequence Implies Property
+###  |=> 
 
 ```systemverilog
 sequence_expr |=> property_expr 
@@ -198,7 +198,7 @@ property property P5 (AA);
 endproperty
 ```
 
-### And Property
+### and
 
 ```systemverilog
 property_expr and property_expr 
@@ -209,7 +209,7 @@ Returns true if both property expressions are true. Example:
 @(c) v |=> (w ##1 @(d) x) and (y ##1 z)
 ```
 
-### Not Property
+### not
 
 ```systemverilog
 not property_expr 
@@ -222,7 +222,7 @@ property abcd;
 endproperty
 ```
 
-### If Property
+### if
 
 ```systemverilog
 if (expression) property_expr1 [ else property_expr2] 
@@ -237,7 +237,7 @@ endproperty
 
 ## Sequence Operators
 
-### And Sequence
+### and
 
 ```systemverilog
 sequence_expr1 and sequence_expr2 
@@ -248,7 +248,7 @@ Both sequences must occur, but the end times of the operands can be different. E
 (a ##2 b) and (c ##2 d ##2 e) ;
 ```
 
-### First Match
+### first_match
 
 ```systemverilog
 first_match (sequence_expr[, seq_match_item])
@@ -261,7 +261,7 @@ first_match(a ##1 b[->1]:N] ## c);
 endsequence
 ```
 
-### Intersect Sequence
+### intersect
 
 ```systemverilog
 sequence_expr1 intersect sequence_expr2 
@@ -272,7 +272,7 @@ Both sequences must occur, and the start and end times of the sequence expressio
 (a ##2 b) intersect (c ##2 d ##2 e)
 ```
 
-### Or Sequence
+### or
 
 ```systemverilog
 sequence_expr1 or sequence_expr2 
@@ -283,7 +283,7 @@ At least one of the sequences must occur. Example:
 (b ##1 c) or (d[*1:2] ##1 e) or f[*2]
 ```
 
-### Throughout
+### throughout
 
 ```systemverilog
 boolean_expr throughout sequence_expr 
@@ -294,7 +294,7 @@ A condition must hold true for the duration of a sequence. Example:
 (a ##2 b) throughout read_sequence
 ```
 
-### Within
+### within
 
 ```systemverilog
 sequence_expr1 within sequence_expr2 

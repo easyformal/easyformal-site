@@ -6,7 +6,7 @@ description: "SystemVerilog Assertion（SVA） 快速参考手册；SVA Quick Re
 
 ---
 
-注意：该 SVA 快速参考手册目前支持 IEEE 1800-2005 标准。
+**注意**：该 SVA 快速参考手册目前支持 IEEE 1800-2005 标准。
 
 ## 0. 绑定（Binding）
 

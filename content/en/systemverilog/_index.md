@@ -1,6 +1,6 @@
 ---
 weight: 1
-title: "SystemVerilog tutorial"
+title: "SystemVerilog Tutorial"
 titleIcon: "fa-solid fa-microchip"
 
 categories: ["digital circuit"]

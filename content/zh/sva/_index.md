@@ -1,6 +1,6 @@
 ---
 weight: 2
-title: "SystemVerilog Assertion 教程"
+title: "SVA 教程"
 titleIcon: "fa-solid fa-microchip"
 categories: ["数字电路基础"]
 description: "这是详细的 SystemVerilog Assertion 教程"
