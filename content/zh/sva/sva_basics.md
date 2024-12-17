@@ -1,7 +1,7 @@
 
 ---
 weight: 3
-title: "SVA 快速入门教程"
+title: "SVA 快速入门教程(TBD)"
 description: "SystemVerilog Assertion（SVA） 快速入门教程；SVA Quick Tutorial"
 ---
 
@@ -81,7 +81,7 @@ A concise description of complex behaviour: After request is asserted, acknowled
    - $fatal: run time fatal, terminates simulation.
    - $error: run time error (default).
    - $warning: run time warning, can be suppressed by command-line option.
-    - $info: failure carries no specific severity, can be suppressed.
+   - $info: failure carries no specific severity, can be suppressed.
 - All severity system tasks print the severity level, the file name and line
 number, the hierarchical name or scope, simulation time, etc. 
 - Example: 
@@ -112,35 +112,121 @@ assert property (
 ```
 
 - Layers of Concurrent Assertion
-    -    Make the sequence
-    -    Evaluate the sequence
-    -    Define a property for sequence with pass fail
-    -    Property asserted with a specific block (e.g.: Illegal sequence, measuring coverage…)
-   -  Boolean expression layer
-        -  Elementary layer of Concurrent assertion
-        -  Evaluates Boolean expression to be either TRUE or FALSE
-        -  Occur in the following of concurrent properties
-            -  In the Sequences used to build properties
-            -  In top level disable iff claues
+  -  Make the sequence
+  -  Evaluate the sequence
+  -  Define a property for sequence with pass fail
+  -  Property asserted with a specific block (e.g.: Illegal sequence, measuring coverage…)
+  -  Boolean expression layer
+    -  Elementary layer of Concurrent assertion
+    -  Evaluates Boolean expression to be either TRUE or FALSE
+    -  Occur in the following of concurrent properties
+      -  In the Sequences used to build properties
+      -  In top level disable iff claues
 
 `assert property ( @(posedge clk) disable iff (a && $rose(b, posedge clk)) trigger |=> test_expr;`
 
   -  restrictions on the type of variables shortreal, real and realtime
-        -  string
-        -  event
-        -  chandle
-        -  class
-        -  associative array
-        -  dynamic array
+    -  string
+    -  event
+    -  chandle
+    -  class
+    -  associative array
+    -  dynamic array
   -  Functions in expressions should be automatic
   -  Variable in expression bust be static design variable
   -  Sampling a variable in concurrent assertions
 
 ![concurrent_assertion](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/concurrent_assertion.png)
 
-        -  The value of signal req is low at clocks 1. At clock tick 2, the
-        value is sampled as high and remains high until clock tick 4. The
-        sampled value req at clock tick 4 is low and remains low until
-        clock tick 6
-        -  Notice that, at clock tick 5, the simulation value transitions to
-        high. However, the sampled value is low 
+  -  The value of signal req is low at clocks 1. At clock tick 2, the
+    value is sampled as high and remains high until clock tick 4. The
+    sampled value req at clock tick 4 is low and remains low until
+    clock tick 6
+  -  Notice that, at clock tick 5, the simulation value transitions to
+    high. However, the sampled value is low 
+
+  -  Sequence layer: build on top of Boolean expression layer, and
+describe sequence made of series of events and other sequences
+    -  Linear sequence: absolute timing relation is known
+    -  Nonlinear sequence
+      -  multiple events trigger a sequence and not time dependant
+      -  multiple sequences interact with and control one another
+    -  Sequence block
+      -  Define one or more sequences
+      -  Syntax:
+```
+        sequence identifier (formal_argument_list);
+            variable declarations
+            sequence_spec
+        endsequence
+```
+      -  Example:
+```
+sequence seq1 
+    ~reset##5 req; 
+endsequence 
+```
+```
+sequence seq2 
+    req##2 ack;
+endsequence
+```
+```
+sequence seq3
+    seq1##2 ack
+endsequence
+```
+    -  Usage: sequence can be instantiated in any of the following
+blocks
+      -  A module
+      -  An interface block
+      -  A program block
+
+      - A clocking block
+      - A package
+      - A compilation unit scope
+    - ## delay operator: used to join expression consisting of events.
+      - Usage:
+        - ## integral_number
+        - identifier
+        - ## (constant_expression)
+        - ## [cycle_delay_const_range_expression]
+      - The operator ## can be used multiple times within the same
+chain. E.g., a ##1 b ##2 c ##3 d
+      - You can indefinitely increase the length of a chain of events
+using ## and 1'b1. The example below extends the previous
+chain of events by 50 clocks. E.g., a ##1 b ##2 c ##3 d
+##50 1'b1
+      - Sequence overlap indicates b starts on the same clock when
+a ends: a ##0 b
+      - Sequence concatenation means b starts one clock after a
+ends: a ##1 b
+      - You can use an integer variable in place of the delay. E.g., a
+##delay b
+      - The following means b completes 2 clock ticks after a
+completes (regardless of when b starts): a ##2 b.ended
+      - You can specify a range of absolute delays too. E.g., a
+##[1:4] b. You can also use a range of variable delays. E.g.,
+a ##[delay1:delay2] b
+      - The symbol $ in a delay range indicates that a signal or
+event will 'eventually' occur. E.g., a ##[delay1:$] b
+    - Sequence and clock
+      - Implied clock
+```
+sequence seq1
+    ~reset##5 req;
+endsequence
+```
+      - Using clock inside a sequence
+```      
+sequence Sequence3;
+    @(posedge clk_1) // clock name is clk_1
+    s1 ##2 s2; // two sequences
+endsequence
+```
+    - Sequence operations
+
+
+
+
+    
