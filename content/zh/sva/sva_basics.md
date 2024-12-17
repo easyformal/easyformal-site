@@ -111,42 +111,43 @@ assert property (
 ); 
 ```
 
-- Layers of Concurrent Assertion
-  -  Make the sequence
-  -  Evaluate the sequence
-  -  Define a property for sequence with pass fail
-  -  Property asserted with a specific block (e.g.: Illegal sequence, measuring coverage…)
-  -  Boolean expression layer
-    -  Elementary layer of Concurrent assertion
-    -  Evaluates Boolean expression to be either TRUE or FALSE
-    -  Occur in the following of concurrent properties
-      -  In the Sequences used to build properties
-      -  In top level disable iff claues
+#### 8.1 Layers of Concurrent Assertion
+
+-  Make the sequence
+-  Evaluate the sequence
+-  Define a property for sequence with pass fail
+-  Property asserted with a specific block (e.g.: Illegal sequence, measuring coverage…)
+
+#### 8.1.1 Boolean expression layer
+
+-  Elementary layer of Concurrent assertion
+-  Evaluates Boolean expression to be either TRUE or FALSE
+-  Occur in the following of concurrent properties
+-  In the Sequences used to build properties
+-  In top level disable iff claues
 
 `assert property ( @(posedge clk) disable iff (a && $rose(b, posedge clk)) trigger |=> test_expr;`
 
-  -  restrictions on the type of variables shortreal, real and realtime
+-  restrictions on the type of variables shortreal, real and realtime
     -  string
     -  event
     -  chandle
     -  class
     -  associative array
     -  dynamic array
-  -  Functions in expressions should be automatic
-  -  Variable in expression bust be static design variable
-  -  Sampling a variable in concurrent assertions
+-  Functions in expressions should be automatic
+-  Variable in expression bust be static design variable
+-  Sampling a variable in concurrent assertions
 
 ![concurrent_assertion](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/concurrent_assertion.png)
 
-  -  The value of signal req is low at clocks 1. At clock tick 2, the
-    value is sampled as high and remains high until clock tick 4. The
-    sampled value req at clock tick 4 is low and remains low until
-    clock tick 6
-  -  Notice that, at clock tick 5, the simulation value transitions to
-    high. However, the sampled value is low 
+-  The value of signal req is low at clocks 1. At clock tick 2, the value is sampled as high and remains high until clock tick 4. The sampled value req at clock tick 4 is low and remains low until clock tick 6 
+-  Notice that, at clock tick 5, the simulation value transitions to high. However, the sampled value is low 
 
-  -  Sequence layer: build on top of Boolean expression layer, and
-describe sequence made of series of events and other sequences
+#### 8.1.1 Sequence layer
+
+build on top of Boolean expression layer, and describe sequence made of series of events and other sequences
+
     -  Linear sequence: absolute timing relation is known
     -  Nonlinear sequence
       -  multiple events trigger a sequence and not time dependant
@@ -225,8 +226,10 @@ sequence Sequence3;
 endsequence
 ```
     - Sequence operations
+![sequence_oper](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/sequence_oper.png)
+      - Repetition operators
+        - There are three types of repetition operators.
+          - Consecutive Repetition Operator [* ]
+          - Non-consecutive Repetition Operator [= ]
+          - Goto Repetition Operator [-> ]
 
-
-
-
-    
