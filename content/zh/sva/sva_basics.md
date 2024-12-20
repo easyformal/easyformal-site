@@ -3,9 +3,10 @@
 weight: 3
 title: "SVA 快速入门教程(TBD)"
 description: "SystemVerilog Assertion（SVA） 快速入门教程；SVA Quick Tutorial"
+draft: true
 ---
 
-### 1. Introduction
+## 1. Introduction
 
 - Assertions are primarily used to validate the behavior of a design
 - Piece of verification code that monitors a design implementation for compliance with the specifications
@@ -15,7 +16,7 @@ description: "SystemVerilog Assertion（SVA） 快速入门教程；SVA Quick Tu
 - Encourage measurement of function coverage and assertion coverage
 - Re-use checks throughout life-cycle, strength regression testing
 
-### 2.  Benefits of Assertions
+## 2.  Benefits of Assertions
 
 - Improves observability of the design
     - Using assertions one can create unlimited number of observation points any where in the design
@@ -41,11 +42,11 @@ description: "SystemVerilog Assertion（SVA） 快速入门教程；SVA Quick Tu
     - Desire behavior is not expressed in a traditional test bench, but rather as a set of assertions. Formal analysis does not require test vectors.
     - With Formal analysis many bugs can be found quickly and very easily in the Design process without the need to develop large sets of test vectors.
 
-### 3. Where SVA can reside? 
+## 3. Where SVA can reside? 
 
 ![sva_reside](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/sva_reside.png)
 
-### 4. Who writes Assertions? 
+## 4. Who writes Assertions? 
 
 - White-Box Verification
     - Inserted by design engineers
@@ -58,18 +59,18 @@ description: "SystemVerilog Assertion（SVA） 快速入门教程；SVA Quick Tu
   - External interfaces
   - End-to-end properties 
 
-### 5. SystemVerilog Assertion Example 
+## 5. SystemVerilog Assertion Example 
 
 A concise description of complex behaviour: After request is asserted, acknowledge must come 1 to 3 cycles later.
 
 ![sva_example](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/sva_example.png)
 
-### 6. Types of SVA
+## 6. Types of SVA
 
 - Immediate Assertions
 - Concurrent Assertions
 
-### 7. Immediate Assertions
+## 7. Immediate Assertions
 
 - Immediate assertions = instructions to a simulator.
 - Follows simulations event semantics.
@@ -95,7 +96,7 @@ always @ (posedge clk) begin:checkResults
 end 
 ```
 
-### 8. Concurrent Assertions
+## 8. Concurrent Assertions
 
 - Concurrent assertions = instructions to verification tools.
 - Based on clock semantics. Evaluated on the clock edge.
@@ -111,7 +112,7 @@ assert property (
 ); 
 ```
 
-#### 8.1 Layers of Concurrent Assertion
+### 8.1 Layers of Concurrent Assertion
 
 -  Make the sequence
 -  Evaluate the sequence
@@ -144,17 +145,17 @@ assert property (
 -  The value of signal req is low at clocks 1. At clock tick 2, the value is sampled as high and remains high until clock tick 4. The sampled value req at clock tick 4 is low and remains low until clock tick 6 
 -  Notice that, at clock tick 5, the simulation value transitions to high. However, the sampled value is low 
 
-#### 8.1.1 Sequence layer
+#### 8.1.2 Sequence layer
 
 build on top of Boolean expression layer, and describe sequence made of series of events and other sequences
 
-    -  Linear sequence: absolute timing relation is known
-    -  Nonlinear sequence
-      -  multiple events trigger a sequence and not time dependant
-      -  multiple sequences interact with and control one another
-    -  Sequence block
-      -  Define one or more sequences
-      -  Syntax:
+-  Linear sequence: absolute timing relation is known
+-  Nonlinear sequence
+    -  multiple events trigger a sequence and not time dependant
+    -  multiple sequences interact with and control one another
+-  Sequence block
+    -  Define one or more sequences
+    -  Syntax:
 ```
         sequence identifier (formal_argument_list);
             variable declarations
@@ -177,24 +178,21 @@ sequence seq3
     seq1##2 ack
 endsequence
 ```
-    -  Usage: sequence can be instantiated in any of the following
-blocks
-      -  A module
-      -  An interface block
-      -  A program block
-
-      - A clocking block
-      - A package
-      - A compilation unit scope
-    - ## delay operator: used to join expression consisting of events.
-      - Usage:
-        - ## integral_number
-        - identifier
-        - ## (constant_expression)
-        - ## [cycle_delay_const_range_expression]
-      - The operator ## can be used multiple times within the same
-chain. E.g., a ##1 b ##2 c ##3 d
-      - You can indefinitely increase the length of a chain of events
+-  Usage: sequence can be instantiated in any of the following blocks
+  - A module
+  - An interface block
+  - A program block
+  - A clocking block
+  - A package
+  - A compilation unit scope
+- \#\# delay operator: used to join expression consisting of events.
+    - Usage:
+    - \#\# integral_number
+    - identifier
+    - \#\# (constant_expression)
+    - \#\# [cycle_delay_const_range_expression]
+    - The operator ## can be used multiple times within the same chain. E.g., a ##1 b ##2 c ##3 d
+    - You can indefinitely increase the length of a chain of events
 using ## and 1'b1. The example below extends the previous
 chain of events by 50 clocks. E.g., a ##1 b ##2 c ##3 d
 ##50 1'b1
