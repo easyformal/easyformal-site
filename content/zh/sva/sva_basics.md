@@ -2,6 +2,7 @@
 weight: 3
 title: "SVA 快速入门教程(TBD)"
 description: "SystemVerilog Assertion（SVA） 快速入门教程；SVA Quick Tutorial"
+draft: true
 ---
 
 ## 1. Introduction
@@ -218,4 +219,143 @@ endsequence
       - Consecutive Repetition Operator [* ]
       - Non-consecutive Repetition Operator [= ]
       - Goto Repetition Operator [-> ]
+- Consecutive repetition operator
+  + Indicates that the sequence repeats itself a specified number of times. E.g., s1 ##2 s2 [*4] ##5 s3 is same as s1 ##2 (s2 ##1 s2 ##1 s2 ##1 s2) ##5 s3 or, or simply s1 ##2 s2 ##1 s2 ##1 s2 ##1 s2 ##5 s3
+  + Empty Sequence [*0]: a repetition of 0 times indicates that the resultant is empty
+    - Usage rules
+      + Neither (e ##0 s) nor (s ##0 e) matches any sequence.
+      + (e ##n s) is equivalent to (##(n-1) s), if n > 0
+      + (s ##n e) is equivalent to (s ##(n-1) `true), if n > 0
+  + Repetition with a Range
+    - Range can be specified with repetition operator. E.g., s1 [*2:3] is equivalent to s1 ##1 s1 (two times of s1) or s1 ##1 s1 ##1 s1 (three times of s1)
+    - A range repetition is applicable to a chain of sequences (or events) as well. E.g., (s1 ##5 s2) [*2:3] is equivalent to (s1 ##5 s2) ##1 (s1 ##5 s2) (two times of (s1 #5 s2)) or (s1 ##5 s2) ##1 (s1 ##5 s2) ##1 (s1 ##5 s2) (three times of (s1 #5 s2))
+    - An upper bound ‘$’ in a range indicates the sequence indicates specified lower bound. E.g.,
+      + s1[*2:$]
+      + s0 ##3 s1[*2:$] ##2 s2
+- Non-Consecutive exact repetition operator of Boolean expression, extends beyond true value of operand to last true value
+  + b [=3]: The Boolean expression b has been true thrice, but not necessarily on successive clocks and there may be additional clock cycles after the last true b before the sequence completes.
+  + b [=3:5]: Here, b has been true 3, 4 or 5 times, once again not necessarily on consecutive clocks, and with possible additional clocks afterwards when b is not true.
+  + a ##2 b [=3] ##4 c: The Boolean expression b has been true thrice, but not necessarily on successive clocks. The first occurrence of b happens after two clocks cycles of a. The last one occurs at least four clock cycles before c.
+- Goto Repetition Operator
+  + Goto Repetition operator of Boolean expression, end at true value of expression
+  + b [->3]: The Boolean expression b has been true thrice, but not necessarily on successive clocks
+  + b [->3:5]: Here, b has been true 3, 4 or 5 times, once again not necessarily on consecutive clocks
+  + a ##2 b [->3] ##4 c: The Boolean expression b has been true thrice, but not necessarily on successive clocks. The first occurrence of b happens after two clocks cycles of a. The last one occurs four clock cycles before c
+- Value change functions: SVA sample value functions detect
+events on signals/expressions and can be used within
+assertions
 
+| Function | Meaning | 
+| --- | --- |
+| $rose ( expression ) e.g. : (a ##1 b) ##1 $rose( c ) | true, if the least significant bit of the expression changed to 1; false, otherwise |
+| $fell ( expression ) e.g. : (a ##1 b) ##1 $fell( c ) | rue, if the least significant bit of the expression changed to 0; false, otherwise |
+| $stable ( expression ) e.g. : (a ##1 b) ##1 $stable( c ) | true, if the value of the expression did not change; false, otherwise |
+| $past (expression, number_of_ticks ) e.g. : a == $past(c, 5) | eturns the sampled value of the expression that was present number_of_ticks prior to the time of evaluation of $past. |
+
+  - Value change expression example: value change expression e1 is defined as $rose(req) and value change expression e2 is defined as $fell(ack):
+
+![sim_tick](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/sim_tick.png)
+
+- Boolean and: and two Booleans
+
+![bool_and](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/bool_and.png)
+
+- Sequence and: and two sequences – and expects both the events to match but end time can be different
+
+![seq_and](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/seq_and.png)
+
+- Intersect construct: intersecting two sequences – intersect expects both the events to match but end time must be same
+
+![inter_const](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/inter_const.png)
+
+- Sequence ended: the ended method returns a Boolean that is true in the cycle at which the associated sequence has achieves a match, regardless of when the sequence started. E.g., s1 ##1 s2.ended
+
+![seq_ended](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/seq_ended.png)
+
+- Sequence “or”: the Sequence s1 and s2 has multiple matches – when s1 matches and each of the samples on which s2 matches. If s1 matches, “or” sequence also matches, regardless of whether s2 matches and vice versa. E.g., s1 or s2
+
+![seq_or](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/seq_or.png)
+
+- Boolean or: or two Booleans
+
+![bool_or](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/bool_or.png)
+
+- Sequence or: or of two sequences with time  range. When first_match will be asserted in this sequence?
+
+![seq_or_2](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/seq_or_2.png)
+
+- Throughout construct example
+```systemverilog
+sequence burst_rule1;
+    @(posedge mclk)
+        $fell(burst_mode) ##0
+        (!burst_mode) throughout (##2 ((trdy==0)&&(irdy==0)) [*7]);
+endsequence
+```
+
+![throughout](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/throughout.png)
+
+- Local variables
+  + Sequences Can have local variable
+  + New copy of local variable is created and no hierarchical access to these local variables are allowed
+  + Assigned using a comma separated list along with other expression
+  + Eg:
+```
+sequence s1( int test );
+    int i;
+    i = test;
+    (data_valid, (i=tag_in)) |-> ##7 (tag_out==i);
+endsequence
+```
+  + Cannot be accessed outside the sequence where it is instantiated
+  + Local variable can be passed only as an entire actual argument
+
+- System functions
+
+| Function | Meaning | 
+| --- | --- |
+| $onehot(expression) | true, if only one of the bits in the expression is high |
+| $onehot0(expression) | true, if at most one of the bit in the expression is high |
+| $isunknown(expression) | true, if any bit of the expression is X or Z |
+| $countones(expression) | returns the number of 1s in a bit vector expression |
+
+
+#### 8.1.3 Property layer
+
+  - Built on the foundation of Sequences, Boolean expressions
+  - Property block 
+property identifier (formal_arg_list);
+variable declaration
+property_spec
+endproperty
+  - Property declaration can occur in
+  - A module
+  - An interface
+  - A program
+  - A clocking block
+  - A package
+  - A compilation unit
+  - Property declaration does not affect a simulation behavior until
+the property is designated as following
+  - An assumed or anticipated behavior: By associating the
+property using an assume keyword. The verification
+environment assumes that the behavior occurs
+  - A checker: By associating the property using an assert
+keyword. The verification environment checks if the behavior
+occurs
+  - A coverage specification: By associating the property using a
+cover keyword. The verification environment uses the
+statement for measuring coverage
+  - Types of Properties
+  - Property Type 1: A Sequence
+  - A property expression may be a simple sequence
+expression as shown below
+property sequence_example;
+s1; // s1 is a sequence defined elsewhere
+endproperty
+  - A sequence as a property expression is valid if the
+sequence is not an empty match (i.e., it contains a
+specific non-empty expression to match).
+  - Property Type 2: Another Property
+
+## ...
