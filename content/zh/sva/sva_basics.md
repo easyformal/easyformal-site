@@ -1,9 +1,7 @@
-
 ---
 weight: 3
 title: "SVA 快速入门教程(TBD)"
 description: "SystemVerilog Assertion（SVA） 快速入门教程；SVA Quick Tutorial"
-draft: true
 ---
 
 ## 1. Introduction
@@ -151,18 +149,18 @@ build on top of Boolean expression layer, and describe sequence made of series o
 
 -  Linear sequence: absolute timing relation is known
 -  Nonlinear sequence
-    -  multiple events trigger a sequence and not time dependant
-    -  multiple sequences interact with and control one another
+  -  multiple events trigger a sequence and not time dependant
+  -  multiple sequences interact with and control one another
 -  Sequence block
-    -  Define one or more sequences
-    -  Syntax:
+  -  Define one or more sequences
+  -  Syntax:
 ```
-        sequence identifier (formal_argument_list);
-            variable declarations
-            sequence_spec
-        endsequence
+sequence identifier (formal_argument_list);
+    variable declarations
+    sequence_spec
+endsequence
 ```
-      -  Example:
+  -  Example:
 ```
 sequence seq1 
     ~reset##5 req; 
@@ -192,42 +190,32 @@ endsequence
     - \#\# (constant_expression)
     - \#\# [cycle_delay_const_range_expression]
     - The operator ## can be used multiple times within the same chain. E.g., a ##1 b ##2 c ##3 d
-    - You can indefinitely increase the length of a chain of events
-using ## and 1'b1. The example below extends the previous
-chain of events by 50 clocks. E.g., a ##1 b ##2 c ##3 d
-##50 1'b1
-      - Sequence overlap indicates b starts on the same clock when
-a ends: a ##0 b
-      - Sequence concatenation means b starts one clock after a
-ends: a ##1 b
-      - You can use an integer variable in place of the delay. E.g., a
-##delay b
-      - The following means b completes 2 clock ticks after a
-completes (regardless of when b starts): a ##2 b.ended
-      - You can specify a range of absolute delays too. E.g., a
-##[1:4] b. You can also use a range of variable delays. E.g.,
-a ##[delay1:delay2] b
-      - The symbol $ in a delay range indicates that a signal or
-event will 'eventually' occur. E.g., a ##[delay1:$] b
-    - Sequence and clock
-      - Implied clock
+    - You can indefinitely increase the length of a chain of events using ## and 1'b1. The example below extends the previous chain of events by 50 clocks. E.g., a ##1 b ##2 c ##3 d ##50 1'b1
+    - Sequence overlap indicates b starts on the same clock when a ends: a ##0 b
+    - Sequence concatenation means b starts one clock after a ends: a ##1 b
+    - You can use an integer variable in place of the delay. E.g., a ##delay b
+    - The following means b completes 2 clock ticks after a completes (regardless of when b starts): a ##2 b.ended
+    - You can specify a range of absolute delays too. E.g., a ##[1:4] b. You can also use a range of variable delays. E.g., a ##[delay1:delay2] b
+    - The symbol $ in a delay range indicates that a signal or event will 'eventually' occur. E.g., a ##[delay1:$] b
+- Sequence and clock
+  - Implied clock
 ```
 sequence seq1
     ~reset##5 req;
 endsequence
 ```
-      - Using clock inside a sequence
+  - Using clock inside a sequence
 ```      
 sequence Sequence3;
     @(posedge clk_1) // clock name is clk_1
     s1 ##2 s2; // two sequences
 endsequence
 ```
-    - Sequence operations
+- Sequence operations
 ![sequence_oper](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/sequence_oper.png)
-      - Repetition operators
-        - There are three types of repetition operators.
-          - Consecutive Repetition Operator [* ]
-          - Non-consecutive Repetition Operator [= ]
-          - Goto Repetition Operator [-> ]
+  - Repetition operators
+    - There are three types of repetition operators.
+      - Consecutive Repetition Operator [* ]
+      - Non-consecutive Repetition Operator [= ]
+      - Goto Repetition Operator [-> ]
 
