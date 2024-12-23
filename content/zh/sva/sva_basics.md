@@ -2,7 +2,6 @@
 weight: 3
 title: "SVA 快速入门教程"
 description: "SystemVerilog Assertion（SVA） 快速入门教程；SVA Quick Tutorial"
-draft: true
 ---
 
 ## 1. 引言
