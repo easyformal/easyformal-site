@@ -9,7 +9,7 @@ description: "SystemVerilog Assertion Tutorial；SVA Quick Tutorial"
 
 - Assertions are primarily used to validate the behavior of a design
 - Piece of verification code that monitors a design implementation for compliance with the specifications
-- Directive to a verification tool that the tool should attempt to prove/assume/count a given property using formal methods
+- Directive to a verification tool that the tool should attempt to prove/assume/count a given property  using formal methods
 - Capture the design intent more formally and find specification error earlier
 - Find more bugs and source of the bugs faster
 - Encourage measurement of function coverage and assertion coverage
