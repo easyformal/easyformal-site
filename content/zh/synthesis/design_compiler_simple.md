@@ -123,13 +123,58 @@ RTL 模块综合示意图：
 
 ![sync_clk](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/sync_clk.png)
 
+假设在上面的电路中，我们要控制触发器 FF2 到 FF3 之间的时序，即 X 电路的延时，那要通过什么方式让 DC 知道呢？显然一个直观的办法就是定义系统的时钟 Clk，如果我们定义好了 Clk 的周期，那么 DC 会自动的尽量保证从 FF2 触发的信号能在一个周期内到达FF3 寄存器。假如周期是 10ns，FF3 触发器的建立时间(setup time)是 1ns，那么留给 X 电路的延时最大只能有10-1=9ns。
+
 ##### 3.2.1.3 定义时钟
 
+![clock_define](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/clock_define.png)
+
+在电路综合的过程中，所有时序电路以及组合电路的优化都是以时钟为基准来计算路径延迟的，因此，一般都要在综合的时候指定时钟，作为估计路径延迟的基准。定义时钟的时候我们必须定义它的时钟源(Clock source)，时钟源可以是端口也可以是管脚；另外还必须定义时钟的周期。另外有一些可选项，比如占空比(Duty Cycle)、时钟偏差(Clock Skew)和时钟名字(Clock Name)。定义时钟采用一个语句 create_clock 完成——
+
+`create_clock -period 10 {get_ports Clk}`   
+`set_dont_touch_network {get_clocks Clk}`
+
+第一句定义了一个周期为 10ns 的时钟①，它的时钟源是一个称为 Clk 的端口。
+
+第二句对所有定义的时钟网络设置为 don’t_touch，即综合的时候不对 Clk 信号优化。如果不加这句，DC 会根据 Clk 的负载自动对他产生 Buffer，而在实际的电路设计中，时钟树(Clock Tree)的综合有自己特别的方法，它需要考虑到实际布线后的物理信息，所以 DC 不需要在这里对它进行处理，就算处理了也不会符合要求。
+
+![clock_defined](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/clock_defined.png)
+
+可以看到，定义了系统时钟后，图 44 中的 X 电路已经被约束起来了，但是电路的输入输出两块还没有施加约束，这可以通过 DC 的另外两个命令来完成。
 
 ##### 3.2.1.4 约束输入路径
 
+![input_dp_delay](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/input_dp_delay.png)
+
+从上图可以看出，我们所要定义的输入延时是指被综合模块外的寄存器触发的信号在到达被综合模块之前经过的延时，在上图中就是外围触发器的clk-q的延时加上M电路的延时。当确定这段延时之后，被综合模块内部的电路延时的范围也可以确定下来了。加入时钟周期是 20ns，输入延时是 4ns，内部触发器的建立时间为 1.0ns，那么就可以推断出要使电路正常工作，N 电路的延时最大不能超过 20-4-1.0=15.0ns。
+
+设置输入延时是通过 DC 的 set_input_delay 命令完成的
+
+`set_input_delay -max 4 -clock Clk [get_ports A]`
+
+如上面的语句指出了被综合模块的端口 A 的最大输入延时为 4ns。-max 选项是指明目前设置的是输入的最大延迟，为了满足时序单元建立时间（setup time）的要求。另外还有一个选项是-min，它是针对保持时间的约束使用的，后面章节有详细介绍。-clk 是指出这个端口受哪个时钟周期的约束。
+
+定义了输入延时之后，相对应的还要设置电路的输出延时。
 
 ##### 3.2.1.5 约束输出路径
+
+
+![output_dp_delay](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/synthesis/image/1/output_dp_delay.png)
+
+上图中，信号在被综合模块的触发器 U3 里触发，被外围的一个触发器接收。对外围电路而言，它有一个 T 电路延时和外围触发器的建立时间。当确定了他们的延时之后，被综合模块内部的输出路径延时范围也就确定下来了。假如，时钟周期 20ns，输出延时 5.4ns，U3 触发器的 clk-q 延时为 1.0ns，那么输入路径 S 的最大延时就是 20-5.4-1.0=13.6ns。
+
+设置输入延时是通过 DC 的 set_output_delay 命令完成的
+
+`set_output_delay -max 5.4 -clock Clk [get_ports B]`
+
+上面的语句指出了被综合模块的输出端口 B 的最大输出延时为 5.4ns。-max 选项是指明目前设置的是输入的最大延迟；-clk 是指出这个端口受哪个时钟周期的约束。
+
+至此，模块的面积、时钟、输入输出延时都施加了相应的约束。在施加了这些约束之后，可以使用下面的几个命令检查约束是否施加成功
+
+- report_port –verbose 报告在当前设计中所有的输入输出端口属性和施加的约束值
+- report_clock 报告当前设计中定义的时钟及其属性情况
+- reset_design 删除当前设计中所有的属性值和约束(通常用在约束脚本的第一句) 
+- list_libs 列出内存中所有可用的库
 
 #### 3.2.2 环境属性
 
