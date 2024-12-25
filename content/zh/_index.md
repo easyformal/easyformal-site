@@ -11,6 +11,10 @@ description: "Easy Formal 主页"
 
 本网站将提供数字设计的基础内容，包括完整的 SystemVerilog 教程，以及形式验证的各种应用、核心算法和实现原理，另外还将提供常见 EDA 厂商（如 Synopsys、Cadence等）系列软件的使用教程。
 
+### 本站架构
+
+本站目前采用 Hugo 作为后台系统，使用 Github Pages 服务，图片资源使用 jsDelivr CDN 加速。如遇到网页加载缓慢或图片资源加载失败，请检查您的网络与 Github 的连接性。
+
 ### 关于作者
 
 联系邮箱: easyformal@gmail.com
