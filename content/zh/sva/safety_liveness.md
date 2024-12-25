@@ -28,9 +28,9 @@ description: "Safety 属性和 Liveness 属性；Safety Properties and Liveness 
 
 ![活性示意图](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/4/liveness.png)
 
-**断言**：属性 P 在触发事件发生后必须最终有效。
-
 ![活性详细示意图](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/4/liveness2.png)
+
+**断言**：属性 P 在触发事件发生后必须最终有效。
 
 **补充解释**：
 - **解码算法最终会终止**：表示系统能够确保处理流程在合理时间内完成，而不是无限循环。
