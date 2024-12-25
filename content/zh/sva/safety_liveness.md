@@ -6,35 +6,71 @@ description: "Safety 属性和 Liveness 属性；Safety Properties and Liveness 
 
 ### 安全性属性（Safety Properties）
 
-**安全性（Safety）**：确保不发生任何不好的事情。以下是一些例子：
-- FIFO 不会溢出。
-- 系统不允许多个进程同时修改共享内存。
-- 请求在 5 个时钟周期内获得响应。
+安全性属性检查的是坏事永远不会发生。它是FPV中最常用的属性类型，因为与活性属性相比，求解器找到证明要简单得多。
 
-更正式地说，安全性属性的含义是：任何违反该属性的路径都会有一个有限的前缀，而这个前缀的每个扩展也都会违反该属性。因此，通过有限的模拟运行可以验证是否存在违反安全性属性的情况。
+安全性属性可能产生以下结果：
 
-**补充解释**：
-- **FIFO 溢出**：当数据缓冲区超过其最大容量时可能发生的问题，通过安全性属性，我们可以确保这种情况永远不会发生。
-- **共享内存访问冲突**：多个进程同时访问或修改共享内存可能导致不一致性，通过安全性检查可以避免。
-- **响应时间限制**：通过属性定义，确保系统的每个请求都在规定的时间内得到响应。
+- 得到完整证明，意味着求解器可以保证“坏事”永远不会发生。
+- 得到有界证明，表明“坏事”在某些周期内无法发生。
+- 一个有限前缀的反例，显示“坏事”发生的路径。
+
+下面是从IHI0051A amba4 axi4流提取的一个安全性属性示例：
+
+```systemverilog 
+   /* ,         ,                                                     *
+    * |\\\\ ////| "Once TVALID is asserted it must remain asserted    *
+    * | \\\V/// |  until the handshake (TVALID) occurs".              *
+    * |  |~~~|  |  Ref: 2.2.1. Handshake Protocol, p2-3. 	      *
+    * |  |===|  |						      *
+    * |  |A  |  |						      *
+    * |  | X |  |						      *
+    *  \ |  I| /						      *
+    *   \|===|/							      *
+    *    '---'							      */
+   property tvalid_tready_handshake;
+      @(posedge ACLK) disable iff (!ARESETn)
+	TVALID && !TREADY |-> ##1 TVALID;
+   endproperty // tvalid_tready_handshake
+```
+            安全属性表示如果接收方无法处理数据包，则不应丢弃该数据包。
 
 ### 活性属性（Liveness Properties）
 
-**活性（Liveness）**：保证最终会发生一些好事情。以下是一些例子：
+活性属性检查的是某件好事最终一定会发生。如
+
 - 解码算法最终会终止。
 - 每个请求最终都会得到确认。
 
-更正式地说，活性属性的含义是：任何有限的路径都可以扩展为满足该属性的路径。
+这类属性在FPV中检查起来更复杂，因为与安全性属性不同，活性属性的CEX不能在单一状态下找到。为了找到CEX，必须提供足够的证据，证明“好事”可能永远被推迟，有时还需要辅助属性来帮助求解器理解有某种进展正在发生（公平性假设）。
 
-![活性示意图](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/4/liveness.png)
+安全性属性可以通过什么都不做来证明，因为这永远不会导致“坏事”的发生。活性属性与安全性属性相辅相成，但它们更难证明，因为求解器需要保证某件事会无限多次发生。
 
-![活性详细示意图](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/4/liveness2.png)
+下面是一个活性属性的示例，来自经典仲裁器问题，表明每个请求必须最终得到授权，可以通过SVA如下描述：
 
-**断言**：属性 P 在触发事件发生后必须最终有效。
+```systemverilog 
+property liveness_obligation_arbiter;
+  req |=> s_eventually gnt
+endproperty
+```
 
-**补充解释**：
-- **解码算法最终会终止**：表示系统能够确保处理流程在合理时间内完成，而不是无限循环。
-- **请求确认**：即使有复杂的条件限制，每个请求最终也能被系统接受并确认。
+另一个活性属性的示例，定义了发送方和接收方之间必须最终发生握手，来自IHI0022E AMBA和AXI协议规范，如下所示：
+```systemverilog 
+   // Deadlock (ARM Recommended)
+   /* ,         ,                                                     *
+    * |\\\\ ////|  It is recommended that READY is asserted within    *
+    * | \\\V/// |  MAXWAITS cycles of VALID being asserted.           *
+    * |  |~~~|  |  This is a *potential deadlock check* that can be   *
+    * |  |===|  |  implemented as well using the strong eventually    *
+    * |  |A  |  |  operator (if the required bound is too large to be *
+    * |  | X |  |  formally efficient). Otherwise this bounded        *
+    *  \ |  I| /   property works fine.                               *
+    *   \|===|/                                                       *
+    *    '---'                                                        */
+   property handshake_max_wait(valid, ready);
+      valid & !ready |-> strong(##[1:$]) ready;
+   endproperty // handshake_max_wait
+```
+            使用活性属性检查死锁条件。这是一种非常常见的做法。
 
 理论上，活性属性只能通过无限次的模拟运行来验证是否会发生违反。但在实际中，我们通常通过“优雅的测试结束”（假设测试运行到某个点表示无限时间）来近似验证活性属性。
 
