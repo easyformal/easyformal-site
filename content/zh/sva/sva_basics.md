@@ -50,8 +50,7 @@ description: "SystemVerilog Assertion（SVA） 快速入门教程；SVA Quick Tu
 
 ## 3. SVA 可以在哪里使用？
 
-![sva_reside](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/3/sva_reside.png)
-
+c
 ## 4. 谁编写断言？
 
 - 白盒验证
