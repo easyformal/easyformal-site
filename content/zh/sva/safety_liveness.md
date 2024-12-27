@@ -17,22 +17,13 @@ description: "Safety 属性和 Liveness 属性；Safety Properties and Liveness 
 下面是从IHI0051A amba4 axi4流提取的一个安全性属性示例：
 
 ```systemverilog 
-   /* ,         ,                                                     *
-    * |\\\\ ////| "Once TVALID is asserted it must remain asserted    *
-    * | \\\V/// |  until the handshake (TVALID) occurs".              *
-    * |  |~~~|  |  Ref: 2.2.1. Handshake Protocol, p2-3. 	      *
-    * |  |===|  |						      *
-    * |  |A  |  |						      *
-    * |  | X |  |						      *
-    *  \ |  I| /						      *
-    *   \|===|/							      *
-    *    '---'							      */
+   //一旦 TVALID 被断言，它必须保持断言状态直到握手 (TVALID) 发生
    property tvalid_tready_handshake;
       @(posedge ACLK) disable iff (!ARESETn)
 	TVALID && !TREADY |-> ##1 TVALID;
    endproperty // tvalid_tready_handshake
 ```
-            安全属性表示如果接收方无法处理数据包，则不应丢弃该数据包。
+         安全属性表示如果接收方无法处理数据包，则不应丢弃该数据包。
 
 ## 2. 活性属性（Liveness Properties）
 
@@ -41,7 +32,7 @@ description: "Safety 属性和 Liveness 属性；Safety Properties and Liveness 
 - 解码算法最终会终止。
 - 每个请求最终都会得到确认。
 
-这类属性在FPV中检查起来更复杂，因为与安全性属性不同，活性属性的 CEX 不能在单一状态下找到。为了找到CEX，必须提供足够的证据，证明“好事”可能永远被推迟，有时还需要辅助属性来帮助求解器理解有某种进展正在发生（公平性假设）。
+这类属性在FPV中检查起来更复杂，因为与安全性属性不同，活性属性的 CEX（反例） 不能在单一状态下找到。为了找到 CEX，必须提供足够的证据，证明“好事”可能永远被推迟，有时还需要辅助属性来帮助求解器理解有某种进展正在发生（公平性假设）。
 
 安全性属性可以通过什么都不做来证明，因为这永远不会导致“坏事”的发生。活性属性与安全性属性相辅相成，但它们更难证明，因为求解器需要保证某件事会无限多次发生。
 
@@ -56,16 +47,7 @@ endproperty
 另一个活性属性的示例，定义了发送方和接收方之间必须最终发生握手，来自IHI0022E AMBA和AXI协议规范，如下所示：
 ```systemverilog 
    // Deadlock (ARM Recommended)
-   /* ,         ,                                                     *
-    * |\\\\ ////|  It is recommended that READY is asserted within    *
-    * | \\\V/// |  MAXWAITS cycles of VALID being asserted.           *
-    * |  |~~~|  |  This is a *potential deadlock check* that can be   *
-    * |  |===|  |  implemented as well using the strong eventually    *
-    * |  |A  |  |  operator (if the required bound is too large to be *
-    * |  | X |  |  formally efficient). Otherwise this bounded        *
-    *  \ |  I| /   property works fine.                               *
-    *   \|===|/                                                       *
-    *    '---'                                                        */
+   // 建议在 VALID 被断言的 MAXWAITS 周期内断言 READY。这是一个潜在死锁检查，也可以使用强 eventually 运算符来实现（如果所需的界限太大而无法正式有效）。否则，这个有界属性可以正常工作。
    property handshake_max_wait(valid, ready);
       valid & !ready |-> strong(##[1:$]) ready;
    endproperty // handshake_max_wait
@@ -78,7 +60,7 @@ endproperty
 
 ### 2.1 liveness 示例
 
-liveness 特性对于 FPV 非常重要，尤其是对于验证设计没有死锁、活锁、饥饿和信息丢失。其中一个 liveness 问题，除了难以实现证明收敛之外，是调试它们：理解 safety CEX 有时可能很困难，但解释 liveness 的 CEX 可以是一门艺术。
+活性属性对于FPV非常重要，尤其是在证明设计没有死锁、活锁、饥饿和信息丢失时。活性问题的一个挑战，除了证明收敛的难度外，还有调试活性问题：理解安全性反例（CEX）有时会很困难，但解释活性反例（CEX）则是一门艺术。
 
 下面是一个简单的有限状态机
 
@@ -125,21 +107,31 @@ module liveness
 				  ps == idle |=> s_eventually ps == inform_result);
 endmodule // liveness
 ```
+解释：这段代码展示了一个简单的Verilog模块，用于验证活性属性。模块有几个输入（clk, rstn, start）和输出（done）。状态机有四个状态：idle, decrypt, validate_key, inform_result。每个状态之间的转移都被写成假设（assume）属性，表示在特定条件下状态的转移。
 
-该属性 ap_deadlock 被写入以捕获任何死锁，但由于无界延迟运算符的弱特性，这将无法实现（但为什么？）。属性 ap_deadlock_2 是解决这个问题的更好方案。通过运行 `sby -f ./src/liveness/liveness.sby err` 可以看到，尽管 FSM 序列是正确的，但 SBY 显示属性失败，而且没有 VCD 文件用于调试。现在该怎么办？
+- init0 和 init1 定义了复位序列。
+- ap_done 属性表示当状态机进入 inform_result 状态时，done 输出应该被置为真。
+- state0 到 state3 定义了不同状态之间的转移规则。
+- ap_deadlock 是一个弱的、无界的属性，试图捕捉死锁，但由于延迟操作符的弱性，无法真正捕捉死锁。
+- ap_deadlock_2 是一个改进的活性属性，检查是否存在死锁。
 
-调试活跃性属性的一种技术是通过使用有界安全断言来判断活跃性义务是否得以履行。如果此类属性失败，则意味着缺少一个公平性假设。在这种情况下，活跃性义务是 `ps == inform_result`。读者可以分析图 5.12 来理解发生了什么（提示：有两条返回到空闲状态的路径，一条当 `start` 为 0 时，另一条当 `start` 可以变为 1 时，只有其中一条路径满足活跃性义务）。
+ap_deadlock 这个属性尝试捕捉死锁，但由于使用了无界延迟操作符（##[1:$]），它不能有效地捕捉死锁。该属性没有限定最大延迟范围，导致它无法对系统状态的长期行为做出有效检查。ap_deadlock_2 属性通过使用 s_eventually 来改进活性检查，能够更准确地捕捉死锁。
 
-如前所述，未来的应用笔记将深入讨论这一点，但为了继续这个例子，缺失的公平性假设的解决方案如下： 
+为了调试活性属性，可以通过添加有界安全性断言来检查是否满足活性义务。如果该断言失败，就表明系统中可能缺少某些公平性假设。例如，在这个例子中，活性义务是确保系统最终能够进入 inform_result 状态。由于有两个返回到 idle 的路径，只有在特定条件下（例如 start 变为 1）才满足活性义务。
+
+缺失的公平性假设的解决方案如下：
+
 ```systemverilog
    ap_fairness: assume property(disable iff(!rstn)
    				!start |=> s_eventually start);
 ```
-取消注释第 45 到 48 行以启用 ap_fairness 假设。
+此时填写一个错误的状态并运行FPV，死锁将被该属性捕获，此时我们知道 CEX 是正确的，而不是一个虚假的假阴性。
 
-通过在第 32 行填写一个错误的状态并运行 `sby -f ./src/liveness/liveness.sby pass`，死锁将被属性捕获，现如今我们知道 CEX 是正确的，而不是一个虚假的假阴性。
+```systemverilog
+   ps == validate_key |=> ps == <state>); // correct state
+```
 
-#### 有界活性（Bounded Liveness）
+### 2.2 有界活性（Bounded Liveness）
 
 ![有界活性示意图](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/4/bounded_liveness.png)
 
@@ -148,7 +140,7 @@ endmodule // liveness
 **补充解释**：
 - **时间限制**：通过明确的起始和结束事件来限制属性的验证范围，使问题更易于处理。
 
-#### 不变量（Invariants）
+### 2.3 不变量（Invariants）
 
 ![不变量示意图](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/sva/image/4/invariant.png)
 
