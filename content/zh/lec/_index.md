@@ -1,5 +1,5 @@
 ---
-weight: 6
+weight: 8
 title: "逻辑等价性验证 LEC "
 titleIcon: "fa-solid fa-scale-balanced"
 categories: ["逻辑等价性验证"]
