@@ -1,6 +1,6 @@
 ---
 weight: 8
-title: "逻辑等价性验证 LEC "
+title: "逻辑等价性验证 "
 titleIcon: "fa-solid fa-scale-balanced"
 categories: ["逻辑等价性验证"]
 description: "这是逻辑等价性验证（LEC）教程，旨在帮助您掌握确保硬件设计功能一致性的核心技术。"

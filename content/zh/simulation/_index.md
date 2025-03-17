@@ -1,8 +1,8 @@
 ---
 weight: 3
-title: "功能仿真 Simulation "
+title: "仿真验证 "
 titleIcon: "fa-solid fa-computer"
-categories: ["功能仿真"]
+categories: ["仿真验证"]
 description: ""
 
 expanded: false

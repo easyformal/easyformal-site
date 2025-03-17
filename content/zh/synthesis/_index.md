@@ -1,6 +1,6 @@
 ---
 weight: 7
-title: "逻辑综合 Synthesis"
+title: "逻辑综合"
 titleIcon: "fa-solid fa-gears"
 categories: ["综合"]
 description: "逻辑综合 Synthesis"
