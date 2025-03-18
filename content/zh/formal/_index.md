@@ -1,9 +1,9 @@
 ---
 weight: 5
-title: "形式验证签核"
+title: "形式验证"
 titleIcon: "fa-solid fa-pen"
-categories: ["签核"]
-description: "这是详细的签核教程"
+categories: ["形式验证"]
+description: "这是详细的形式验证教程"
 
 expanded: false
 ---
