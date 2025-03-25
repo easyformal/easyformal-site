@@ -73,7 +73,9 @@ themesdir              = "themes"
   # currentVersion          = "latest"
   latestVersionUrl        = "https://shadocs.netlify.app/"
   # enforceRefrelLinks    = true
-
+  highlightjsLang             = "latex"
+  highlightjsTheme             = "github"
+  highlightjsVersion             = "11.7.0"
 
   [params.taxonomies]
     [params.taxonomies.categories]
