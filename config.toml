@@ -41,7 +41,7 @@ themesdir              = "themes"
     startLevel = 1
     endLevel   = 6
   [markup.goldmark.renderer]
-    unsafe = false
+    unsafe = true
 
 
 [Languages]

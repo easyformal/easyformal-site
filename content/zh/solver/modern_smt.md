@@ -2,62 +2,63 @@
 weight: 1
 title: "SAT 与 SMT 求解器：现代验证工具"
 description: "SAT 与 SMT 求解器：现代验证工具"
-draft: true
+# draft: true
 ---
 
 ## 1. 引言
 
-**SAT（Satisfiability，可满足性）问题** 和 **SMT（Satisfiability Modulo Theories，模理论可满足性）求解器** 是计算机科学中形式验证和自动推理领域的核心工具。SAT 问题关注于判断一个命题逻辑公式是否存在一个满足其为真的变量赋值，而 SMT 求解器则在 SAT 的基础上扩展，支持更复杂的逻辑理论（如算术、数组、未解释函数等），从而能够处理更广泛的验证任务。
-
-本文将详细介绍 SAT 和 SMT 求解器的基本概念、核心算法、实际应用以及相关理论，帮助读者理解这些工具在现代验证中的重要作用。
+SAT 和 SMT 求解器是计算机科学中形式验证和自动推理领域的核心工具。SAT 问题关注于判断一个命题逻辑公式是否存在一个满足其为真的变量赋值，而 SMT 求解器则在 SAT 的基础上扩展，支持更复杂的逻辑理论（如算术、数组、函数等），从而能够处理更广泛的验证任务。
 
 ## 2. SAT 问题
 
 ### 2.1 定义
 
-SAT 问题可以形式化定义为：给定一个命题逻辑公式 \(\alpha\)，判断是否存在一个变量赋值使得 \(\alpha\) 为真。
+SAT 问题可以形式化定义为：给定一个命题逻辑公式 $ \alpha $，判断是否存在一个变量赋值使得 $\alpha$ 为真。
 
 - **示例**：  
-  \(\alpha(x_1, x_2, x_3) := (x_1 \wedge x_2 \vee x_3) \wedge (x_1 \wedge \neg x_3 \vee x_2)\)  
-  **满足解**：\(x_1 = 1, x_2 = 1, x_3 = 0\)
+  $$\(\alpha(x_1, x_2, x_3) := (x_1 \wedge x_2 \vee x_3) \wedge (x_1 \wedge \neg x_3 \vee x_2)\)$$
+  **满足解**：$$\(x_1 = 1, x_2 = 1, x_3 = 0\)$$
 
 ### 2.2 复杂性
 
-SAT 问题是 **NP 完全** 的，这意味着在最坏情况下，求解时间复杂度为 \(2^n\)，其中 \(n\) 是变量的个数。尽管如此，经过三十多年的工程优化，现代 SAT 求解器能够在许多实际问题中高效运行。
+SAT 问题是 **NP 完全** 的，这意味着在最坏情况下，求解时间复杂度为 $2^n$，其中 $n$ 是变量的个数。尽管是指数级的，但构建 SAT 求解器是有意义的，并且 30+ 年的工程设计造就了可以解决实际问题的求解器。
 
 ### 2.3 SAT 在验证中的应用
 
 SAT 求解器在形式验证中有着广泛应用，尤其是在以下场景：
 
 - **可达性分析**：  
-  判断从初始状态 \(Q_0\) 出发，是否能在 \(n\) 步内到达某个状态 \(U\)。这可以通过编码为以下 SAT 问题来解决：  
-  \[ F_{Q_0}(X_0) \wedge F_T(X_0, X_1) \wedge \cdots \wedge F_T(X_{n-1}, X_n) \wedge F_U(X_n) \]  
-  若公式可满足（SAT），则 \(U\) 可达；若不可满足（UNSAT），则不可达。
+  判断从初始状态 $ Q_0 $ 出发，是否能在 $ n $ 步内到达某个状态 $ U $。这可以通过编码为以下 SAT 问题来解决：  
+  $$ F_{Q_0}(X_0) \wedge F_T(X_0, X_1) \wedge \cdots \wedge F_T(X_{n-1}, X_n) \wedge F_U(X_n)   $$
+  若公式可满足（SAT），则 $ U $ 可达；若不可满足（UNSAT），则不可达。
 
 - **不变性检查**：  
-  验证某个不变性 \(I\) 是否在系统中始终成立，编码为：  
-  \[ F_{Q_0}(X) \rightarrow F_I(X) \wedge F_I(X) \wedge F_T(X, X') \rightarrow F_I(X') \]
+  验证某个不变性 $ I $ 是否在系统中始终成立，编码为：  
+  $$ F_{Q_0}(X) \rightarrow F_I(X) \wedge F_I(X) \wedge F_T(X, X') \rightarrow F_I(X') $$
 
 ## 3. 命题逻辑与电路表示
 
 ### 3.1 基本术语
 
-- **变量**：如 \(x_1, x_2\)
-- **文字（Literal）**：变量的正或负形式，如 \(x_1, \neg x_2\)
-- **子句（Clause）**：文字的析取，如 \((x_1 \vee \neg x_2 \vee x_3)\)
-- **合取范式（CNF）**：子句的合取，如 \((x_1 \vee x_2 \vee \neg x_3) \wedge (\neg x_2 \vee x_1)\)
+- **变量**：如 $x_1, x_2$
+- **文字（Literal）**：变量的正或负形式，如 $\(x_1, \neg x_2\)$
+- **子句（Clause）**：文字的析取，如 $\((x_1 \vee \neg x_2 \vee x_3)\)$
+- **合取范式（CNF）**：子句的合取，如 $\((x_1 \vee x_2 \vee \neg x_3) \wedge (\neg x_2 \vee x_1)\)$
 
 SAT 求解器通常假设输入公式为 CNF 形式。
 
 ### 3.2 电路表示
 
-命题逻辑公式可以通过逻辑电路表示，通过重命名子表达式来提高效率：
+逻辑电路可以通过命题逻辑公式表示，然后通过重命名子表达式来提高效率：
 
 - **逻辑等价（Tautologically Equivalent）**：两个公式的每组满足解完全相同。
 - **等满足性（Equisatisfiable）**：两个公式在可满足性上等价，即一个可满足当且仅当另一个可满足。
 
 **示例**：  
-对于 \((A \wedge B) \leftrightarrow E\)，可以将公式重写为等满足的 CNF 形式，从而简化计算。
+
+<!-- ![circuits](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/solver/image/1/circuits.png) -->
+
+对于 $\((A \wedge B) \leftrightarrow E\)$，可以将公式重写为等满足的 CNF 形式，从而简化计算。
 
 ## 4. 转换为 CNF
 
@@ -68,8 +69,8 @@ SAT 求解器通常假设输入公式为 CNF 形式。
 3. **合取所有子句**：最终的 CNF 公式是所有子句的合取。
 
 **示例**：  
-对于 \(E \leftrightarrow (A \wedge B)\)，可转换为：  
-\[ (\neg A \vee \neg B \vee E) \wedge (\neg E \vee A) \wedge (\neg E \vee B) \]
+对于 $\(E \leftrightarrow (A \wedge B)\)$，可转换为：  
+\$$(\neg A \vee \neg B \vee E) \wedge (\neg E \vee A) \wedge (\neg E \vee B) $$
 
 ## 5. SAT 求解算法
 
@@ -111,11 +112,11 @@ return 空集
 
 **抽象 DPLL 框架** 通过状态和转换规则建模 DPLL 算法的执行过程：
 
-- **状态**：形如 \(M \| F\)，其中 \(M\) 是部分赋值，\(F\) 是 CNF 公式。
-- **初始状态**：\(\emptyset \| F\)
+- **状态**：形如 $\(M \| F\)$，其中 $\(M\)$ 是部分赋值，\(F\)$ 是 CNF 公式。
+- **初始状态**：\(\emptyset \| F\)$
 - **终止状态**：
-  - \(fail\)：表示不可满足。
-  - \(M \| G\)：\(G\) 与原公式等满足，且 \(M\) 满足 \(G\).
+  - $\(fail\)$：表示不可满足。
+  - $\(M \| G\)：\(G\)$ 与原公式等满足，且 $\(M\)$ 满足 $\(G\)$.
 
 **主要转换规则**：
 - **UnitProp**：传播单元子句。
@@ -125,22 +126,22 @@ return 空集
 - **Fail**：判定不可满足。
 
 **示例**：  
-对于公式 \(1 \vee 2, \overline{1} \vee \overline{2}, 2 \vee 3, \overline{3} \vee 2, 1 \vee 4\)，通过一系列转换最终得出不可满足。
+对于公式 $\(1 \vee 2, \overline{1} \vee \overline{2}, 2 \vee 3, \overline{3} \vee 2, 1 \vee 4\)$，通过一系列转换最终得出不可满足。
 
 ## 7. SAT 建模
 
 ### 7.1 有限状态机建模
 
-对于有限状态机 \(\mathcal{A} = (Q, Q_0, T)\)，可以通过以下步骤建模为 SAT 问题：
+对于有限状态机 $\(\mathcal{A} = (Q, Q_0, T)\)$，可以通过以下步骤建模为 SAT 问题：
 
-1. **状态编码**：使用 \(k\) 个二进制变量 \(X = \{x_1, \ldots, x_k\}\) 表示状态，满足 \(|Q| \leq 2^k\).
-2. **初始状态**：编码为 \(F_{Q_0}(X)\).
-3. **转移关系**：编码为 \(F_T(X, Y)\).
-4. **目标状态**：编码为 \(F_U(X)\).
+1. **状态编码**：使用 $\(k\)$ 个二进制变量 $\(X = \{x_1, \ldots, x_k\}\)$ 表示状态，满足 $\(|Q| \leq 2^k\)$.
+2. **初始状态**：编码为 $\(F_{Q_0}(X)\)$.
+3. **转移关系**：编码为 $\(F_T(X, Y)\)$.
+4. **目标状态**：编码为 $\(F_U(X)\)$.
 
-### 7.2 Bounded Model Checking（BMC）
+### 7.2 BMC
 
-**BMC** 通过展开转移关系检查在 \(n\) 步内是否能到达目标状态：  
+**BMC** 通过展开转移关系检查在 $\(n\)$ 步内是否能到达目标状态：  
 \[ F_{Q_0}(X_0) \wedge F_T(X_0, X_1) \wedge \cdots \wedge F_T(X_{n-1}, X_n) \wedge F_U(X_n) \]
 
 ## 8. SMT 求解器
@@ -162,7 +163,7 @@ SMT 支持多种理论，包括：
 
 ### 8.3 决策过程示例
 
-以 UF 理论为例，判断公式 \(x_1 = x_2 \wedge x_2 = x_3 \wedge x_4 = x_5 \wedge x_5 \neq x_1 \wedge F(x_1) \neq F(x_3)\) 的可满足性，使用 congruence closure 算法逐步合并等价类，最终得出不可满足。
+以 UF 理论为例，判断公式 $\(x_1 = x_2 \wedge x_2 = x_3 \wedge x_4 = x_5 \wedge x_5 \neq x_1 \wedge F(x_1) \neq F(x_3)\)$ 的可满足性，使用 congruence closure 算法逐步合并等价类，最终得出不可满足。
 
 ## 9. SMT 求解方法
 
@@ -175,8 +176,11 @@ SMT 支持多种理论，包括：
 将 SMT 问题抽象为 SAT 问题，通过与理论求解器交互逐步精炼。
 
 **示例**：  
-对于 \(\Phi := g(a) = c \wedge f(g(a)) + f(c) \vee g(a) = d \wedge c + d\)，通过 SAT 和 UF 求解器的多次交互，最终判定不可满足。
+对于 $\(\Phi := g(a) = c \wedge f(g(a)) + f(c) \vee g(a) = d \wedge c + d\)$，通过 SAT 和 UF 求解器的多次交互，最终判定不可满足。
 
-## 10. 总结
 
-SAT 和 SMT 求解器是现代验证工具的核心，广泛应用于形式验证、自动推理等领域。现代求解器如 Z3、CVC4 等通过技术创新和工程优化，已能高效解决实际问题，为验证、合成和符号模拟等任务提供了强大支持。
+## 附录 - 术语
+
+- SAT：Satisfiability，可满足性
+- SMT：Satisfiability Modulo Theories，模理论可满足性
+- BMC：Bounded model checking，有界模型检查
