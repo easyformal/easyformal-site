@@ -2,7 +2,7 @@
 weight: 1
 title: "SAT 与 SMT 求解器：现代验证工具"
 description: "SAT 与 SMT 求解器：现代验证工具"
-# draft: true
+draft: true
 ---
 
 ## 1. 引言
@@ -99,36 +99,88 @@ $$
 I' \equiv (D \wedge E) \vee (\neg C \wedge E) \wedge ((A \wedge B) \leftrightarrow E)
 $$
 
-\(I\)和\(I'\)并非重言等价，但具有等价可满足性（如赋值$\(C=0, A=1, B=1, E=0\)$满足$\(I\)$）。
+$\(I\)$和$\(I'\)$并非重言等价，但具有等价可满足性（如赋值$\(C=0, A=1, B=1, E=0\)$满足$\(I\)$）。
 
 
 对于 $\((A \wedge B) \leftrightarrow E\)$，可以将公式重写为等满足的 CNF 形式，从而简化计算。
 
 ## 4. 转换为 CNF
 
-将任意命题逻辑公式转换为 CNF 的步骤如下：
+将命题逻辑公式转换为CNF的步骤如下：
 
-1. 重命名非叶节点：为电路中的每个非叶节点引入新变量。
-2. 添加等价性子句：为每个非叶节点添加表示其输入输出关系的子句。
-3. 合取所有子句：最终的 CNF 公式是所有子句的合取。
+1. 将公式视为电路：识别逻辑门的层次结构。
+2. 为非叶节点命名：为每个中间表达式引入新变量。
+3. 添加输入/输出子句的合取：为每个非叶节点生成等价约束。
+4. 取所有内容的合取：组合所有子句。
 
-示例：  
-对于 $\(E \leftrightarrow (A \wedge B)\)$，可转换为：  
-\$$(\neg A \vee \neg B \vee E) \wedge (\neg E \vee A) \wedge (\neg E \vee B) $$
+示例：
+
+$$
+E \leftrightarrow (A \wedge B)
+$$
+
+转换为：
+
+$$
+(\neg A \vee \neg B \vee E) \wedge (\neg E \vee A) \wedge (\neg E \vee B)
+$$
+
+其他示例包括：
+
+$$
+G \leftrightarrow (D \wedge E), \quad \neg F \leftrightarrow C, \quad H \leftrightarrow (F \wedge E), \quad I \leftrightarrow (H \vee G)
+$$
 
 ## 5. SAT 求解算法
 
 ### 5.1 DPLL 算法
 
-DPLL（Davis-Putnam-Logemann-Loveland）算法 是现代 SAT 求解的核心，通过以下规则逐步简化公式：
+DPLL（Davis-Putnam-Logemann-Loveland,1962）算法 是现代 SAT 求解的核心
 
-- 单元传播（Unit Propagation）：若某子句只含一个文字，则赋值该文字并更新公式。
-- 纯文字规则（Pure Literal）：若某文字只以一种极性出现，则赋值并删除相关子句。
-- 拆分（Splitting）：选择一个文字进行分支尝试。
+基本思想：对公式 $\(\alpha\)$ 执行一系列保持可满足性的转换：
+- 若以空子句结束，则UNSAT。
+- 若以无子句结束，则SAT。
 
 ### 5.2 DP 算法
 
 DP（Davis-Putnam）算法 是 DPLL 的前身，使用消解（Resolution）规则简化公式，但可能导致子句数量的二次增长。
+
+1. 单位传播（Unit Propagation）：
+   - 若某子句只有一个文字$\(p\)$：
+     - 从所有子句中移除$\(\neg p\)$。
+     - 删除包含$\(p\)$的所有子句。
+2. 纯文字（Pure Literal）：
+   - 若某变量在所有子句中仅以正或负形式出现，则删除包含该文字的所有子句。
+3. 消解（Resolution）：
+   - 选择一个正负均出现的文字$\(p\)$：
+     - $\(P\)$：包含$\(p\)$的子句集合。
+     - $\(N\)$：包含$\(\neg p\)$的子句集合。
+     - 对每对$\(P\)$和$\(N\)$中的子句进行消解，生成新子句（如$\((p \vee \ell_1) \wedge (\neg p \vee k_1) \rightarrow (\ell_1 \vee k_1)\)$）。
+     - 注意：可能导致公式大小平方级增长。
+
+### 5.3 实验结果
+
+以下是不同算法在测试问题上的运行时间（单位：秒）：
+
+| 问题             | tautology | dptaut | dplltaut |
+|------------------|-----------|--------|----------|
+| prime 3          | 0.00      | 0.00   | 0.00     |
+| prime 4          | 0.02      | 0.06   | 0.04     |
+| prime 9          | 18.94     | 2.98   | 0.51     |
+| prime 10         | 11.40     | 3.03   | 0.96     |
+| prime 11         | 28.11     | 2.98   | 0.51     |
+| prime 16         | >1 hour   | out of memory | 9.15 |
+| prime 17         | >1 hour   | out of memory | 3.87 |
+| ramsey 3 3 5     | 0.03      | 0.06   | 0.02     |
+| ramsey 3 3 6     | 5.13      | 8.28   | 0.31     |
+| mk_adder_test 3 2| >>1 hour  | 6.50   | 7.34     |
+| mk_adder_test 4 2| >>1 hour  | 22.95  | 46.86    |
+| mk_adder_test 5 2| >>1 hour  | 44.83  | 170.98   |
+| mk_adder_test 5 3| >>1 hour  | 38.27  | 250.16   |
+| mk_adder_test 6 3| >>1 hour  | out of memory | 1186.4 |
+| mk_adder_test 7 3| >>1 hour  | out of memory | 3759.9 |
+
+DPLL算法在大多数问题中表现出更高的效率。
 
 ### 5.3 不完备 SAT 算法：GSAT
 
@@ -152,25 +204,29 @@ return 空集
 
 Stålmarck 方法 采用广度优先策略，通过 Dilemma Rule 进行 case split，逐步简化公式。
 
+特点：采用广度优先而非深度优先。  
+Dilemma Rule：对文字$\(p\)$进行分支：
+- 考虑$\(\Delta \cup \{(\neg p)\}\)$和$\(\Delta \cup \{(p)\}\)$。  
+- 对每个分支应用基本推导算法$\(R\)$，得到$\(\Delta_0\)$和$\(\Delta_1\)$。  
+- 更新$\(\Delta\)$为$\(\Delta_0 \cap \Delta_1\)$。
+
 ## 6. 抽象 DPLL
 
 抽象 DPLL 框架 通过状态和转换规则建模 DPLL 算法的执行过程：
 
-- 状态：形如 $\(M \| F\)$，其中 $\(M\)$ 是部分赋值，\(F\)$ 是 CNF 公式。
-- 初始状态：\(\emptyset \| F\)$
+- 状态：形如 $\(M \| F\)$，其中 $\(M\)$ 是部分赋值，$\(F\)$ 是 CNF 公式。
+- 初始状态：$ \(\emptyset \| F\)$
 - 终止状态：
   - $\(fail\)$：表示不可满足。
   - $\(M \| G\)：\(G\)$ 与原公式等满足，且 $\(M\)$ 满足 $\(G\)$.
 
-主要转换规则：
-- UnitProp：传播单元子句。
-- PureLiteral：处理纯文字。
-- Decide：分支决策。
-- Backtrack：回溯。
-- Fail：判定不可满足。
+转换规则
+
+![dpll](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/solver/image/1/dpll.png)
 
 示例：  
-对于公式 $\(1 \vee 2, \overline{1} \vee \overline{2}, 2 \vee 3, \overline{3} \vee 2, 1 \vee 4\)$，通过一系列转换最终得出不可满足。
+
+![example](https://cdn.jsdelivr.net/gh/easyformal/easyformal-site@master/content/zh/solver/image/1/example.png)
 
 ## 7. SAT 建模
 
@@ -186,7 +242,7 @@ Stålmarck 方法 采用广度优先策略，通过 Dilemma Rule 进行 case spl
 ### 7.2 BMC
 
 BMC 通过展开转移关系检查在 $\(n\)$ 步内是否能到达目标状态：  
-\[ F_{Q_0}(X_0) \wedge F_T(X_0, X_1) \wedge \cdots \wedge F_T(X_{n-1}, X_n) \wedge F_U(X_n) \]
+$$ F_{Q_0}(X_0) \wedge F_T(X_0, X_1) \wedge \cdots \wedge F_T(X_{n-1}, X_n) \wedge F_U(X_n) $$
 
 ## 8. SMT 求解器
 
